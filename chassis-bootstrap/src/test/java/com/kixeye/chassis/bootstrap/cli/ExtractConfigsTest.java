@@ -74,7 +74,7 @@ public class ExtractConfigsTest {
         File configFile = File.createTempFile(ExtractConfigsTest.class.getSimpleName() + ".", ".properties");
         configFile.deleteOnExit();
 
-        AppMain.main(new String[]{"-e", "test", "-l", "debug", "-c", "-f", configFile.getPath(), "-a", TestExtractConfigsApp.class.getName(), "-s"});
+        AppMain.main(new String[]{"-e", "test", "-l", "info", "-c", "-f", configFile.getPath(), "-a", TestExtractConfigsApp.class.getName(), "-s"});
 
         Properties properties = new Properties();
         try (InputStream is = new FileInputStream(configFile)) {
@@ -105,7 +105,7 @@ public class ExtractConfigsTest {
         Assert.assertNull(curatorFramework.checkExists().forPath(base + "/dtestkey"));
         Assert.assertNull(curatorFramework.checkExists().forPath(base + "/etestkey"));
 
-        AppMain.main(new String[]{"-e", environment, "-l", "debug", "-c", "-z", testingServer.getConnectString(), "-a", TestExtractConfigsApp.class.getName(), "-s"});
+        AppMain.main(new String[]{"-e", environment, "-l", "info", "-c", "-z", testingServer.getConnectString(), "-a", TestExtractConfigsApp.class.getName(), "-s"});
 
         Assert.assertNotNull(curatorFramework.checkExists().forPath(base));
         Assert.assertNotNull(curatorFramework.checkExists().forPath(base + "/atestkey"));
@@ -129,7 +129,7 @@ public class ExtractConfigsTest {
         Assert.assertNull(curatorFramework.checkExists().forPath(base + "/dtestkey"));
         Assert.assertNull(curatorFramework.checkExists().forPath(base + "/etestkey"));
 
-        AppMain.main(new String[]{"-e", environment, "-l", "debug", "-c", "-z", testingServer.getConnectString(), "-a", TestExtractConfigsApp.class.getName(), "-s"});
+        AppMain.main(new String[]{"-e", environment, "-l", "info", "-c", "-z", testingServer.getConnectString(), "-a", TestExtractConfigsApp.class.getName(), "-s"});
 
         Assert.assertNotNull(curatorFramework.checkExists().forPath(base));
         Assert.assertNotNull(curatorFramework.checkExists().forPath(base + "/atestkey"));
@@ -140,7 +140,7 @@ public class ExtractConfigsTest {
 
         TestUtils.resetArchaius();
 
-        AppMain.main(new String[]{"-e", environment, "-l", "debug", "-c", "-z", testingServer.getConnectString(), "-a", TestExtractConfigsApp.class.getName(), "-s"});
+        AppMain.main(new String[]{"-e", environment, "-l", "info", "-c", "-z", testingServer.getConnectString(), "-a", TestExtractConfigsApp.class.getName(), "-s"});
     }
 
     @Test
@@ -157,7 +157,7 @@ public class ExtractConfigsTest {
         Assert.assertNull(curatorFramework.checkExists().forPath(base + "/dtestkey"));
         Assert.assertNull(curatorFramework.checkExists().forPath(base + "/etestkey"));
 
-        AppMain.main(new String[]{"-e", environment, "-l", "debug", "-c", "-z", testingServer.getConnectString(), "-a", TestExtractConfigsApp.class.getName(), "-s"});
+        AppMain.main(new String[]{"-e", environment, "-l", "info", "-c", "-z", testingServer.getConnectString(), "-a", TestExtractConfigsApp.class.getName(), "-s"});
 
         Assert.assertNotNull(curatorFramework.checkExists().forPath(base));
         Assert.assertNotNull(curatorFramework.checkExists().forPath(base + "/atestkey"));
@@ -168,6 +168,6 @@ public class ExtractConfigsTest {
 
         TestUtils.resetArchaius();
 
-        AppMain.main(new String[]{"-e", environment, "-l", "debug", "-c", "-z", testingServer.getConnectString(), "-a", TestExtractConfigsApp.class.getName(), "-s", "-cf"});
+        AppMain.main(new String[]{"-e", environment, "-l", "info", "-c", "-z", testingServer.getConnectString(), "-a", TestExtractConfigsApp.class.getName(), "-s", "-cf"});
     }
 }
