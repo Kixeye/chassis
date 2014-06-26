@@ -1,21 +1,19 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    <groupId>com.kixeye.chassis</groupId>
+    <artifactId>chassis-parent</artifactId>
+    <packaging>pom</packaging>
+    <name>Chassis Parent</name>
+    <version>1.0.0-SNAPSHOT</version>
+    <description>Chassis is a collection of library which provide the building blocks for building java-based HTTP and WebSocket servers.</description>
+    <url>https://github.com/Kixeye/chassis</url>
 
     <parent>
         <groupId>org.sonatype.oss</groupId>
         <artifactId>oss-parent</artifactId>
         <version>7</version>
     </parent>
-
-    <groupId>com.kixeye.chassis</groupId>
-    <artifactId>chassis-parent</artifactId>
-    <packaging>pom</packaging>
-    <name>Chassis Parent</name>
-    <version>1.0.0-SNAPSHOT</version>
-    <description>Chassis is a collection of libraries use to provide cloud integration for jvm-based applications
-    </description>
-    <url>https://github.com/Kixeye/chassis</url>
 
     <licenses>
         <license>

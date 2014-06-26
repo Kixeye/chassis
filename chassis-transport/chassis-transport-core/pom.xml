@@ -1,30 +1,10 @@
-<!DOCTYPE project [
-        <!ELEMENT project (modelVersion|artifactId|packaging|name|description|parent|dependencies)*>
-        <!ATTLIST project
-                xmlns CDATA #REQUIRED
-                xmlns:xsi CDATA #REQUIRED
-                xsi:schemaLocation CDATA #REQUIRED>
-        <!ELEMENT modelVersion (#PCDATA)>
-        <!ELEMENT artifactId (#PCDATA)>
-        <!ELEMENT packaging (#PCDATA)>
-        <!ELEMENT name (#PCDATA)>
-        <!ELEMENT description (#PCDATA)>
-        <!ELEMENT parent (groupId|artifactId|version)*>
-        <!ELEMENT groupId (#PCDATA)>
-        <!ELEMENT version (#PCDATA)>
-        <!ELEMENT dependencies (dependency)*>
-        <!ELEMENT dependency (groupId|artifactId|version|scope|exclusions)*>
-        <!ELEMENT scope (#PCDATA)>
-        <!ELEMENT exclusions (exclusion)*>
-        <!ELEMENT exclusion (groupId|artifactId)*>
-        ]>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>chassis-transport-core</artifactId>
     <packaging>jar</packaging>
     <name>Chassis Transport Core</name>
-    <description>KIXEYE Chassis core transport library</description>
+    <description>Provides support for exposing HTTP endpoints and WebSocket handlers</description>
 
     <parent>
         <groupId>com.kixeye.chassis</groupId>

@@ -1,18 +1,19 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    <artifactId>chassis-transport-api</artifactId>
+    <name>Chassis Transport API</name>
+    <description>
+        Provides common tools for message serialization/de-serialization and message
+        encryption/decryption intended for use by clients and servers which communicate via
+        HTTP or WebSockets. This library also includes a custom message protocol for WebSockets.
+    </description>
+
     <parent>
         <groupId>com.kixeye.chassis</groupId>
         <artifactId>chassis-transport-parent</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
-    <artifactId>chassis-transport-api</artifactId>
-    <name>Chassis Transport API</name>
-    <description>
-        Transport API provides common tools for message serialization/de-serialization and message
-        encryption/decryption intended for use by clients and servers which communicate via
-        HTTP or WebSockets. This library also includes a custom message protocol for WebSockets.
-    </description>
 
     <dependencies>
         <!-- Misc -->
