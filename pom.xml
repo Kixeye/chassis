@@ -1,0 +1,182 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.sonatype.oss</groupId>
+        <artifactId>oss-parent</artifactId>
+        <version>7</version>
+    </parent>
+
+    <groupId>com.kixeye.chassis</groupId>
+    <artifactId>chassis-parent</artifactId>
+    <packaging>pom</packaging>
+    <name>Chassis Parent</name>
+    <version>1.0.0-SNAPSHOT</version>
+    <description>Chassis is a collection of libraries use to provide cloud integration for jvm-based applications
+    </description>
+    <url>https://github.com/Kixeye/chassis</url>
+
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Elvir Bahtijaragic</name>
+            <email>ebahtijaragic@kixeye.com</email>
+            <organization>KIXEYE</organization>
+            <organizationUrl>http://www.kixeye.com</organizationUrl>
+        </developer>
+        <developer>
+            <name>Chad Barry</name>
+            <email>cbarry@kixeye.com</email>
+            <organization>KIXEYE</organization>
+            <organizationUrl>http://www.kixeye.com</organizationUrl>
+        </developer>
+        <developer>
+            <name>David Turner</name>
+            <email>dturner@kixeye.com</email>
+            <organization>KIXEYE</organization>
+            <organizationUrl>http://www.kixeye.com</organizationUrl>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:ssh://git@github.com/Kixeye/chassis.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/Kixeye/chassis.git</developerConnection>
+        <url>scm:git:ssh://git@github.com/Kixeye/chassis.git</url>
+        <tag>HEAD</tag>
+    </scm>
+
+    <modules>
+        <module>chassis-transport</module>
+        <module>chassis-bootstrap</module>
+        <module>chassis-support</module>
+    </modules>
+
+    <properties>
+        <cglib.version>3.1</cglib.version>
+        <aspectjweaver.version>1.7.4</aspectjweaver.version>
+        <hystrix-codahale-metrics-publisher.version>1.0</hystrix-codahale-metrics-publisher.version>
+        <bouncycastle.version>1.50</bouncycastle.version>
+        <reflections.version>0.9.9-RC1</reflections.version>
+        <javax-el.version>2.2.4</javax-el.version>
+        <javax-el-api.version>2.2.4</javax-el-api.version>
+        <javadoc-plugin.version>2.9.1</javadoc-plugin.version>
+        <args4j.version>2.0.26</args4j.version>
+        <commons-io.version>2.4</commons-io.version>
+        <commons-lang.version>2.6</commons-lang.version>
+        <commons-lang3.version>3.3.2</commons-lang3.version>
+        <httpcomponents.version>4.3.2</httpcomponents.version>
+        <scala.version>2.10.3</scala.version>
+        <jetty.version>9.1.0.v20131115</jetty.version>
+        <archaius.version>0.6.0</archaius.version>
+        <hystrix.version>1.4.0-RC2</hystrix.version>
+        <ribbon.version>0.3.3</ribbon.version>
+        <rxjava.version>0.17.2</rxjava.version>
+        <spring.version>4.0.4.RELEASE</spring.version>
+        <spring-scala.version>1.0.0.RC1</spring-scala.version>
+        <slf4j.version>1.7.5</slf4j.version>
+        <annotations.version>1.2</annotations.version>
+        <guava.version>14.0.1</guava.version>
+        <metrics.version>3.0.1</metrics.version>
+        <protostuff.version>1.0.8</protostuff.version>
+        <hibernate.validator.version>5.0.2.Final</hibernate.validator.version>
+        <logback.version>1.0.13</logback.version>
+        <guava.version>14.0.1</guava.version>
+        <metrics.version>3.0.1</metrics.version>
+        <metrics.spring.version>3.0.0-RC4</metrics.spring.version>
+        <aws-sdk.version>1.7.3</aws-sdk.version>
+        <annotations.version>1.2</annotations.version>
+        <flume.version>1.4.0</flume.version>
+        <protostuff.version>1.0.8</protostuff.version>
+        <jackson.version>2.3.1</jackson.version>
+        <eureka.version>1.1.114</eureka.version>
+        <joda.version>2.1</joda.version>
+
+        <!-- Testing -->
+        <junit.version>4.11</junit.version>
+        <mockito.version>1.9.5</mockito.version>
+        <easymock.version>3.2</easymock.version>
+
+        <!-- Plugins -->
+        <license-maven-plugin.version>1.7</license-maven-plugin.version>
+    </properties>
+
+    <issueManagement>
+        <system>github</system>
+        <url>http://github.com/Kixeye/chassis/issues#issue/</url>
+    </issueManagement>
+
+    <build>
+        <extensions>
+            <extension>
+                <groupId>org.apache.maven.wagon</groupId>
+                <artifactId>wagon-ssh</artifactId>
+                <version>2.6</version>
+            </extension>
+        </extensions>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <includeScope>runtime</includeScope>
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>false</overWriteSnapshots>
+                            <overWriteIfNewer>true</overWriteIfNewer>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>2.2.1</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.1</version>
+                <configuration>
+                    <source>1.7</source>
+                    <target>1.7</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>versions-maven-plugin</artifactId>
+                <version>2.1</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.4.2</version>
+                <configuration>
+                    <useEditMode>true</useEditMode>
+                    <arguments>-DStrictHostChecking=no</arguments>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

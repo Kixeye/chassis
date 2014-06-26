@@ -1,0 +1,7 @@
+chassis-transport-swagger
+Copyright 2014 KIXEYE, Inc.
+
+Swagger UI provided by Reverb Technologies, Inc
+https://github.com/wordnik/swagger-ui
+License: Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
+Copyright 2014 Reverb Technologies, Inc.

@@ -1,0 +1,10 @@
+package transport;
+
+option optimize_for = SPEED;
+option java_package = "com.kixeye.chassis.transport.dto";
+
+message Envelope {
+	required string action = 1;
+	optional string typeId = 2;
+	optional bytes payload = 3;
+}
