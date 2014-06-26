@@ -175,6 +175,40 @@
                 </configuration>
             </plugin>
         </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>license-maven-plugin</artifactId>
+                    <version>1.7</version>
+                    <configuration>
+                        <inceptionYear>2014</inceptionYear>
+                        <organizationName>KIXEYE, Inc</organizationName>
+                        <projectName>${project.name}</projectName>
+                        <licenseName>apache_v2</licenseName>
+                        <includes>
+                            <include>**/*.java</include>
+                        </includes>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <phase>process-sources</phase>
+                            <goals>
+                                <goal>check-file-header</goal>
+                            </goals>
+                            <configuration>
+                                <licenseName>apache_v2</licenseName>
+                                <failOnMissingHeader>true</failOnMissingHeader>
+                                <roots>
+                                    <root>src/main/java</root>
+                                    <root>src/test</root>
+                                </roots>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
 
 </project>
