@@ -21,6 +21,7 @@
         <module>chassis-transport-api</module>
         <module>chassis-transport-core</module>
         <module>chassis-transport-swagger</module>
+        <module>chassis-scala-transport-core</module>
     </modules>
 
 </project>
