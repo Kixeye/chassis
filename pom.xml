@@ -85,7 +85,6 @@
         <protostuff.version>1.0.8</protostuff.version>
         <hibernate.validator.version>5.0.2.Final</hibernate.validator.version>
         <logback.version>1.0.13</logback.version>
-        <guava.version>14.0.1</guava.version>
         <metrics.version>3.0.1</metrics.version>
         <metrics.spring.version>3.0.0-RC4</metrics.spring.version>
         <aws-sdk.version>1.7.3</aws-sdk.version>
@@ -174,6 +173,18 @@
                     <arguments>-DStrictHostChecking=no</arguments>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>cobertura-maven-plugin</artifactId>
+                <version>2.6</version>
+                <configuration>
+                    <check>true</check>
+                    <format>xml</format>
+                    <maxmem>256m</maxmem>
+                    <!-- aggregated reports for multi-module projects -->
+                    <aggregate>true</aggregate>
+                </configuration>
+            </plugin>
         </plugins>
         <pluginManagement>
             <plugins>
@@ -188,6 +199,7 @@
                         <licenseName>apache_v2</licenseName>
                         <includes>
                             <include>**/*.java</include>
+                            <include>**/*.scala</include>
                         </includes>
                     </configuration>
                     <executions>
@@ -201,7 +213,11 @@
                                 <failOnMissingHeader>true</failOnMissingHeader>
                                 <roots>
                                     <root>src/main/java</root>
-                                    <root>src/test</root>
+                                    <root>src/main/resources</root>
+                                    <root>src/main/scala</root>
+                                    <root>src/test/java</root>
+                                    <root>src/test/resources</root>
+                                    <root>src/test/scala</root>
                                 </roots>
                             </configuration>
                         </execution>
