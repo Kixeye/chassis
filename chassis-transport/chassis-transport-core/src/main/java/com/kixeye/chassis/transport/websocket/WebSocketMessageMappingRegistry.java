@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.common.base.Joiner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -78,8 +79,14 @@ public class WebSocketMessageMappingRegistry implements BeanFactoryPostProcessor
 								
 								for (String action : mapping.value()) {
 									logger.info("Registering destination [{}] with handler [{}].", action, method.toString());
-									
-									actions.put(action, new WebSocketAction(method, requirements));
+
+                                    Map<String, WebSocketActionArgumentResolver> argumentResolverBeans = beanFactory.getBeansOfType(WebSocketActionArgumentResolver.class);
+
+                                    if(argumentResolverBeans != null && !argumentResolverBeans.isEmpty()){
+                                        logger.info("Registering WebSocketActionArgumentResolver beans {} with action {}", Joiner.on(",").join(argumentResolverBeans.keySet(), action));
+                                    }
+
+									actions.put(action, new WebSocketAction(method, requirements, argumentResolverBeans == null? null : argumentResolverBeans.values().toArray(new WebSocketActionArgumentResolver[argumentResolverBeans.size()])));
 								}
 							}
 						}

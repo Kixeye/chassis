@@ -58,6 +58,7 @@ import com.kixeye.chassis.transport.swagger.SwaggerRegistry;
 @Conditional(HttpEnabledCondition.class)
 @ComponentScan(basePackageClasses=HttpTransportConfiguration.class)
 public class HttpTransportConfiguration {
+    public static final String HTTP_TRANSPORT_CHILD_CONTEXT_BEAN_NAME = "transportWebMvcContext";
 
     @Autowired(required = false)
     private MetricRegistry metricRegistry;
@@ -95,19 +96,10 @@ public class HttpTransportConfiguration {
 			ConfigurableWebApplicationContext webApplicationContext) throws Exception {
     	
         // set up servlets
-        ServletContextHandler context = new ServletContextHandler(ServletContextHandler.NO_SESSIONS | ServletContextHandler.NO_SECURITY);
-		context.setErrorHandler(null);
-		context.setWelcomeFiles(new String[] { "/" });
+        ServletContextHandler context = servletContextHandler();
 		
 		// create a new child application context
-		AnnotationConfigWebApplicationContext childApplicationContext = new AnnotationConfigWebApplicationContext();
-		childApplicationContext.setDisplayName("httpTransport-webMvcContext");
-		childApplicationContext.setParent(webApplicationContext);
-		childApplicationContext.setServletContext(context.getServletContext());
-		childApplicationContext.setEnvironment(webApplicationContext.getEnvironment());
-		childApplicationContext.register(SpringMvcConfiguration.class);
-		childApplicationContext.register(PropertySourcesPlaceholderConfigurer.class);
-		childApplicationContext.refresh();
+		AnnotationConfigWebApplicationContext childApplicationContext = transportWebMvcContext(webApplicationContext, context);
 		
 		// register swagger
 		childApplicationContext.getBean(SwaggerRegistry.class).registerSwagger(context);
@@ -152,7 +144,30 @@ public class HttpTransportConfiguration {
         
 		return server;
 	}
-    
+
+    @Bean
+    public ServletContextHandler servletContextHandler(){
+        ServletContextHandler context = new ServletContextHandler(ServletContextHandler.NO_SESSIONS | ServletContextHandler.NO_SECURITY);
+        context.setErrorHandler(null);
+        context.setWelcomeFiles(new String[] { "/" });
+
+        return context;
+    }
+
+    @Bean(name=HTTP_TRANSPORT_CHILD_CONTEXT_BEAN_NAME)
+    public AnnotationConfigWebApplicationContext transportWebMvcContext(ConfigurableWebApplicationContext parentContext, ServletContextHandler servletContextHandler){
+        AnnotationConfigWebApplicationContext transportWebMvcContext = new AnnotationConfigWebApplicationContext();
+        transportWebMvcContext.setDisplayName("httpTransport-webMvcContext");
+        transportWebMvcContext.setServletContext(servletContextHandler.getServletContext());
+        transportWebMvcContext.setParent(parentContext);
+        transportWebMvcContext.setEnvironment(parentContext.getEnvironment());
+        transportWebMvcContext.register(SpringMvcConfiguration.class);
+        transportWebMvcContext.register(PropertySourcesPlaceholderConfigurer.class);
+        transportWebMvcContext.refresh();
+
+        return transportWebMvcContext;
+    }
+
     /**
 	 * A condition to check whether HTTP is enabled.
 	 * 
