@@ -13,7 +13,7 @@
     </parent>
 
 	<dependencies>
-        <!-- Swagger -->
+        <!-- Swagger-SpringMVC targeting scala 2.10 -->
         <dependency>
             <groupId>com.mangofactory</groupId>
             <artifactId>swagger-springmvc</artifactId>
@@ -56,6 +56,7 @@
 			</exclusions>
 		</dependency>
 
+        <!-- Apache Commons -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
@@ -82,7 +83,7 @@
 			<version>${jetty.version}</version>
 		</dependency>
 
-		<!-- logging -->
+		<!-- SLF4J -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
