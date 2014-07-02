@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.FatalBeanException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -39,6 +40,7 @@ import org.springframework.stereotype.Component;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+import javax.annotation.PostConstruct;
 
 /**
  * Finds and registers all websocket mappings.
@@ -46,15 +48,18 @@ import com.google.common.collect.Sets;
  * @author ebahtijaragic
  */
 @Component
-public class WebSocketMessageMappingRegistry implements BeanFactoryPostProcessor {
+public class WebSocketMessageMappingRegistry {
 	private static final Logger logger = LoggerFactory.getLogger(WebSocketMessageMappingRegistry.class);
 	
 	public static final String WILDCARD_ACTION = "*";
 	
 	private final Multimap<String, WebSocketAction> actions = HashMultimap.create();
 
-	@Override
-	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+    @Autowired
+    private ConfigurableListableBeanFactory beanFactory;
+
+	@PostConstruct
+	public void registerWebSocketActions() throws BeansException {
 		String[] controllerBeanNames = beanFactory.getBeanNamesForAnnotation(WebSocketController.class);
 		
 		if (controllerBeanNames != null && controllerBeanNames.length > 0) {
