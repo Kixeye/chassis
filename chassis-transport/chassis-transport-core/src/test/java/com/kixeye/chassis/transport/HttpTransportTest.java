@@ -104,6 +104,7 @@ public class HttpTransportTest {
 
     static {
         Security.addProvider(new BouncyCastleProvider());
+        System.setProperty("app.version", "1.0.0");
     }
 
 	public static final ClientHttpRequestInterceptor LOGGING_INTERCEPTOR = new ClientHttpRequestInterceptor() {
