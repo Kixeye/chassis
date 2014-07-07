@@ -20,8 +20,9 @@ package com.kixeye.chassis.transport.serde;
  * #L%
  */
 
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -48,7 +49,15 @@ public class SerDeConfiguration {
 	
 	@Bean
 	@Autowired(required=false)
-	public JsonMessageSerDe jsonMessageSerDe(@Qualifier("jacksonScalaObjectMapper") ObjectMapper jacksonScalaObjectMapper) {
+	public JsonMessageSerDe jsonMessageSerDe(ApplicationContext applicationContext) {
+		ObjectMapper jacksonScalaObjectMapper = null;
+		
+		try {
+			jacksonScalaObjectMapper = applicationContext.getBean("jacksonScalaObjectMapper", ObjectMapper.class);
+		} catch (NoSuchBeanDefinitionException e) {
+			// ignore
+		}
+		
 		if (jacksonScalaObjectMapper == null) {
 			return new JsonMessageSerDe();
 		} else {
