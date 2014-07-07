@@ -24,12 +24,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.springframework.http.MediaType;
-
 import com.dyuproject.protostuff.LinkedBuffer;
 import com.dyuproject.protostuff.ProtobufIOUtil;
 import com.dyuproject.protostuff.Schema;
 import com.dyuproject.protostuff.runtime.RuntimeSchema;
+import com.google.common.net.MediaType;
 import com.kixeye.chassis.transport.serde.MessageSerDe;
 
 /**
@@ -39,7 +38,7 @@ import com.kixeye.chassis.transport.serde.MessageSerDe;
  */
 public class ProtobufMessageSerDe implements MessageSerDe {
 	private static final String MESSAGE_FORMAT_NAME = "protobuf";
-	private static final MediaType[] SUPPORTED_MEDIA_TYPES = new MediaType[] { new MediaType("application", MESSAGE_FORMAT_NAME) };
+	private static final MediaType[] SUPPORTED_MEDIA_TYPES = new MediaType[] { MediaType.create("application", MESSAGE_FORMAT_NAME) };
 	
 	/**
 	 * @see com.kixeye.chassis.transport.serde.MessageSerDe#serialize(java.lang.Object, java.io.OutputStream)

@@ -24,14 +24,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.springframework.http.MediaType;
-
 import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.fasterxml.jackson.module.scala.DefaultScalaModule$;
+import com.google.common.net.MediaType;
 import com.kixeye.chassis.transport.serde.MessageSerDe;
 import com.kixeye.chassis.transport.serde.bson.KixeyeBsonParser;
 
@@ -44,7 +43,7 @@ import de.undercouch.bson4jackson.BsonFactory;
  */
 public class BsonMessageSerDe implements MessageSerDe {
 	private static final String MESSAGE_FORMAT_NAME = "bson";
-	private static final MediaType[] SUPPORTED_MEDIA_TYPES = new MediaType[] { new MediaType("application", MESSAGE_FORMAT_NAME) };
+	private static final MediaType[] SUPPORTED_MEDIA_TYPES = new MediaType[] { MediaType.create("application", MESSAGE_FORMAT_NAME) };
 
 	private ObjectMapper objectMapper = new ObjectMapper(new BsonFactory() {
 		private static final long serialVersionUID = 1937650622229505600L;

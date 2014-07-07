@@ -24,9 +24,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.springframework.http.MediaType;
-
 import com.google.common.base.Charsets;
+import com.google.common.net.MediaType;
 import com.kixeye.chassis.transport.serde.MessageSerDe;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.StaxDriver;
@@ -38,8 +37,8 @@ import com.thoughtworks.xstream.io.xml.StaxDriver;
  */
 public class XmlMessageSerDe implements MessageSerDe {
 	private static final String MESSAGE_FORMAT_NAME = "xml";
-	private static final MediaType[] SUPPORTED_MEDIA_TYPES = new MediaType[] { new MediaType("application", MESSAGE_FORMAT_NAME), 
-		new MediaType("text", MESSAGE_FORMAT_NAME) };
+	private static final MediaType[] SUPPORTED_MEDIA_TYPES = new MediaType[] { MediaType.create("application", MESSAGE_FORMAT_NAME), 
+		MediaType.create("text", MESSAGE_FORMAT_NAME) };
 
 	private final XStream xstream = new XStream(new StaxDriver());
 

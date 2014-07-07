@@ -24,13 +24,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.springframework.http.MediaType;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.fasterxml.jackson.module.scala.DefaultScalaModule$;
+import com.google.common.net.MediaType;
 import com.kixeye.chassis.transport.serde.MessageSerDe;
 
 /**
@@ -40,8 +39,8 @@ import com.kixeye.chassis.transport.serde.MessageSerDe;
  */
 public class YamlMessageSerDe implements MessageSerDe {
 	private static final String MESSAGE_FORMAT_NAME = "yaml";
-	private static final MediaType[] SUPPORTED_MEDIA_TYPES = new MediaType[] { new MediaType("application", MESSAGE_FORMAT_NAME), 
-		new MediaType("text", MESSAGE_FORMAT_NAME) };
+	private static final MediaType[] SUPPORTED_MEDIA_TYPES = new MediaType[] { MediaType.create("application", MESSAGE_FORMAT_NAME), 
+		MediaType.create("text", MESSAGE_FORMAT_NAME) };
 
 	private final ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
  

@@ -48,7 +48,7 @@ public class SerDeHttpMessageConverter extends AbstractHttpMessageConverter<Obje
 	 * Construct a new {@code ProtostuffJsonHttpMessageConverter}.
 	 */
 	public SerDeHttpMessageConverter(MessageSerDe serDe) {
-		super(serDe.getSupportedMediaTypes());
+		super(convertMediaTypes(serDe.getSupportedMediaTypes()));
 		this.serDe = serDe;
 	}
 	
@@ -89,5 +89,25 @@ public class SerDeHttpMessageConverter extends AbstractHttpMessageConverter<Obje
 	 */
 	protected void writeInternal(Object t, HttpOutputMessage outputMessage) throws IOException, HttpMessageNotWritableException {
 		serDe.serialize(t, outputMessage.getBody());
+	}
+	
+	/**
+	 * Converts guava media types to spring media types.
+	 * 
+	 * @param inputMediaTypes
+	 * @return
+	 */
+	private static MediaType[] convertMediaTypes(com.google.common.net.MediaType[] inputMediaTypes) {
+		if (inputMediaTypes == null) {
+			return null;
+		}
+		
+		MediaType[] mediaTypes = new MediaType[inputMediaTypes.length];
+		
+		for (int i = 0; i < inputMediaTypes.length; i++) {
+			mediaTypes[i] = new MediaType(inputMediaTypes[i].type(), inputMediaTypes[i].subtype());
+		}
+		
+		return mediaTypes;
 	}
 }
