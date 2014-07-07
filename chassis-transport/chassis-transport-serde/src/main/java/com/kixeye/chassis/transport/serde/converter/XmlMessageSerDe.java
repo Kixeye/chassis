@@ -25,7 +25,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Component;
 
 import com.google.common.base.Charsets;
 import com.kixeye.chassis.transport.serde.MessageSerDe;
@@ -37,7 +36,6 @@ import com.thoughtworks.xstream.io.xml.StaxDriver;
  * 
  * @author ebahtijaragic
  */
-@Component
 public class XmlMessageSerDe implements MessageSerDe {
 	private static final String MESSAGE_FORMAT_NAME = "xml";
 	private static final MediaType[] SUPPORTED_MEDIA_TYPES = new MediaType[] { new MediaType("application", MESSAGE_FORMAT_NAME), 

@@ -20,82 +20,79 @@ package com.kixeye.chassis.transport.serde.converter;
  * #L%
  */
 
-import com.fasterxml.jackson.core.ObjectCodec;
-import com.fasterxml.jackson.core.io.IOContext;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.guava.GuavaModule;
-import com.fasterxml.jackson.datatype.joda.JodaModule;
-import com.fasterxml.jackson.module.scala.DefaultScalaModule$;
-import com.kixeye.chassis.transport.serde.MessageSerDe;
-import com.kixeye.chassis.transport.serde.bson.KixeyeBsonParser;
-import de.undercouch.bson4jackson.BsonFactory;
-import org.springframework.http.MediaType;
-import org.springframework.stereotype.Component;
-
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.springframework.http.MediaType;
+
+import com.dyuproject.protostuff.LinkedBuffer;
+import com.dyuproject.protostuff.ProtobufIOUtil;
+import com.dyuproject.protostuff.Schema;
+import com.dyuproject.protostuff.runtime.RuntimeSchema;
+import com.kixeye.chassis.transport.serde.MessageSerDe;
+
 /**
- * BSON-based SerDe.
+ * JSON-based SerDe.
  * 
  * @author ebahtijaragic
  */
-@Component
-public class BsonMessageSerDe implements MessageSerDe {
-	private static final String MESSAGE_FORMAT_NAME = "bson";
+public class ProtobufMessageSerDe implements MessageSerDe {
+	private static final String MESSAGE_FORMAT_NAME = "protobuf";
 	private static final MediaType[] SUPPORTED_MEDIA_TYPES = new MediaType[] { new MediaType("application", MESSAGE_FORMAT_NAME) };
-
-	private ObjectMapper objectMapper = new ObjectMapper(new BsonFactory() {
-		private static final long serialVersionUID = 1937650622229505600L;
-		
-		@Override
-		protected KixeyeBsonParser _createParser(InputStream in, IOContext ctxt) {
-			KixeyeBsonParser p = new KixeyeBsonParser(ctxt, _parserFeatures, _bsonParserFeatures, in);
-			ObjectCodec codec = getCodec();
-			if (codec != null) {
-				p.setCodec(codec);
-			}
-			return p;
-		}
-	});
-
-    @PostConstruct
-    public void initialize() {
-        objectMapper.registerModule( DefaultScalaModule$.MODULE$ );
-        objectMapper.registerModule( new GuavaModule() );
-        objectMapper.registerModule( new JodaModule() );
-    }
 	
 	/**
 	 * @see com.kixeye.chassis.transport.serde.MessageSerDe#serialize(java.lang.Object, java.io.OutputStream)
 	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void serialize(Object obj, OutputStream stream) throws IOException {
-		objectMapper.writeValue(stream, obj);
+		Schema schema = RuntimeSchema.getSchema(obj.getClass());
+
+		LinkedBuffer linkedBuffer = LinkedBuffer.allocate(256);
+		
+		ProtobufIOUtil.writeTo(stream, obj, schema, linkedBuffer);
 	}
 
 	/**
 	 * @see com.kixeye.chassis.transport.serde.MessageSerDe#serialize(java.lang.Object)
 	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public byte[] serialize(Object obj) throws IOException {
-		return objectMapper.writeValueAsBytes(obj);
+		Schema schema = RuntimeSchema.getSchema(obj.getClass());
+
+		LinkedBuffer linkedBuffer = LinkedBuffer.allocate(256);
+		
+		return ProtobufIOUtil.toByteArray(obj, schema, linkedBuffer);
 	}
 
 	/**
 	 * @see com.kixeye.chassis.transport.serde.MessageSerDe#deserialize(byte[], int, int, java.lang.Class)
 	 */
 	public <T> T deserialize(byte[] data, int offset, int length, Class<T> clazz) throws IOException {
-		return objectMapper.readValue(data, offset, length, clazz);
+		Schema<T> schema = RuntimeSchema.getSchema(clazz);
+
+		T obj = schema.newMessage();
+
+		ProtobufIOUtil.mergeFrom(data, offset, length, obj, schema);
+		
+		return obj;
 	}
 
 	/**
-	 * @see com.kixeye.chassis.transport.serde.MessageSerDe#deserialize(java.io.OutputStream, java.lang.Class)
+	 * @see com.kixeye.chassis.transport.serde.MessageSerDe#deserialize(java.io.InputStream, java.lang.Class)
 	 */
 	public <T> T deserialize(InputStream stream, Class<T> clazz) throws IOException {
-		return objectMapper.readValue(stream, clazz);
-	}
+		Schema<T> schema = RuntimeSchema.getSchema(clazz);
 
+		T obj = schema.newMessage();
+
+		LinkedBuffer linkedBuffer = LinkedBuffer.allocate(256);
+		
+		ProtobufIOUtil.mergeFrom(stream, obj, schema, linkedBuffer);
+		
+		return obj;
+	}
+	
 	/**
 	 * @see com.kixeye.chassis.transport.serde.MessageSerDe#getSupportedMediaTypes()
 	 */

@@ -20,54 +20,52 @@ package com.kixeye.chassis.transport.serde.converter;
  * #L%
  */
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
+import org.springframework.http.MediaType;
+
+import com.fasterxml.jackson.core.ObjectCodec;
+import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.fasterxml.jackson.module.scala.DefaultScalaModule$;
 import com.kixeye.chassis.transport.serde.MessageSerDe;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.MediaType;
-import org.springframework.stereotype.Component;
+import com.kixeye.chassis.transport.serde.bson.KixeyeBsonParser;
 
-import javax.annotation.PostConstruct;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import de.undercouch.bson4jackson.BsonFactory;
 
 /**
- * JSON-based SerDe.
+ * BSON-based SerDe.
  * 
  * @author ebahtijaragic
  */
-@Component
-public class JsonMessageSerDe implements MessageSerDe {
-	private static final String MESSAGE_FORMAT_NAME = "json";
-	private static final MediaType[] SUPPORTED_MEDIA_TYPES = new MediaType[] {
-        new MediaType("application", MESSAGE_FORMAT_NAME),
-		new MediaType("text", MESSAGE_FORMAT_NAME) };
+public class BsonMessageSerDe implements MessageSerDe {
+	private static final String MESSAGE_FORMAT_NAME = "bson";
+	private static final MediaType[] SUPPORTED_MEDIA_TYPES = new MediaType[] { new MediaType("application", MESSAGE_FORMAT_NAME) };
 
-	private final ObjectMapper objectMapper;
+	private ObjectMapper objectMapper = new ObjectMapper(new BsonFactory() {
+		private static final long serialVersionUID = 1937650622229505600L;
+		
+		@Override
+		protected KixeyeBsonParser _createParser(InputStream in, IOContext ctxt) {
+			KixeyeBsonParser p = new KixeyeBsonParser(ctxt, _parserFeatures, _bsonParserFeatures, in);
+			ObjectCodec codec = getCodec();
+			if (codec != null) {
+				p.setCodec(codec);
+			}
+			return p;
+		}
+	});
 
-    public JsonMessageSerDe() {
-        this.objectMapper = new ObjectMapper();
-        this.objectMapper.registerModule(DefaultScalaModule$.MODULE$);
-        this.objectMapper.registerModule( new GuavaModule() );
-        this.objectMapper.registerModule( new JodaModule() );
+    public BsonMessageSerDe() {
+        objectMapper.registerModule( DefaultScalaModule$.MODULE$ );
+        objectMapper.registerModule( new GuavaModule() );
+        objectMapper.registerModule( new JodaModule() );
     }
-
-    public @Autowired(required=false) JsonMessageSerDe( @Qualifier("jacksonScalaObjectMapper") ObjectMapper objectMapper) {
-        // assumes the scala portions of the object mapper have already been initialized
-        this.objectMapper = objectMapper;
-        this.objectMapper.registerModule( new GuavaModule() );
-        this.objectMapper.registerModule( new JodaModule() );
-    }
-
-    @PostConstruct
-    public void initialize() {
-        // Empty - Left for legacy calls.
-    }
-
+	
 	/**
 	 * @see com.kixeye.chassis.transport.serde.MessageSerDe#serialize(java.lang.Object, java.io.OutputStream)
 	 */
@@ -90,12 +88,12 @@ public class JsonMessageSerDe implements MessageSerDe {
 	}
 
 	/**
-	 * @see com.kixeye.chassis.transport.serde.MessageSerDe#deserialize(java.io.InputStream, java.lang.Class)
+	 * @see com.kixeye.chassis.transport.serde.MessageSerDe#deserialize(java.io.OutputStream, java.lang.Class)
 	 */
 	public <T> T deserialize(InputStream stream, Class<T> clazz) throws IOException {
 		return objectMapper.readValue(stream, clazz);
 	}
-	
+
 	/**
 	 * @see com.kixeye.chassis.transport.serde.MessageSerDe#getSupportedMediaTypes()
 	 */

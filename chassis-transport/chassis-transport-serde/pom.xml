@@ -1,12 +1,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>chassis-transport-api</artifactId>
-    <name>Chassis Transport API</name>
+    <artifactId>chassis-transport-serde</artifactId>
+    <name>Chassis Transport SerDe</name>
     <description>
-        Provides common tools for message serialization/de-serialization and message
-        encryption/decryption intended for use by clients and servers which communicate via
-        HTTP or WebSockets. This library also includes a custom message protocol for WebSockets.
+        Provides common tools for message serialization/de-serialization.
     </description>
 
     <parent>
@@ -16,13 +14,6 @@
     </parent>
 
     <dependencies>
-    	<!-- Chassis -->
-        <dependency>
-            <groupId>${parent.groupId}</groupId>
-            <artifactId>chassis-transport-serde</artifactId>
-            <version>${parent.version}</version>
-        </dependency>
-        
         <!-- Misc -->
         <dependency>
             <groupId>com.google.guava</groupId>

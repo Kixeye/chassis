@@ -20,8 +20,18 @@ package com.kixeye.chassis.transport.serde;
  * #L%
  */
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kixeye.chassis.transport.serde.converter.BsonMessageSerDe;
+import com.kixeye.chassis.transport.serde.converter.JsonMessageSerDe;
+import com.kixeye.chassis.transport.serde.converter.ProtobufMessageSerDe;
+import com.kixeye.chassis.transport.serde.converter.XmlMessageSerDe;
+import com.kixeye.chassis.transport.serde.converter.YamlMessageSerDe;
 
 /**
  * Configuration for the SerDe.
@@ -31,5 +41,33 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @ComponentScan(basePackageClasses=SerDeConfiguration.class)
 public class SerDeConfiguration {
+	@Bean
+	public BsonMessageSerDe bsonMessageSerDe() {
+		return new BsonMessageSerDe();
+	}
+	
+	@Bean
+	@Autowired(required=false)
+	public JsonMessageSerDe jsonMessageSerDe(@Qualifier("jacksonScalaObjectMapper") ObjectMapper jacksonScalaObjectMapper) {
+		if (jacksonScalaObjectMapper == null) {
+			return new JsonMessageSerDe();
+		} else {
+			return new JsonMessageSerDe(jacksonScalaObjectMapper);
+		}
+	}
+	
+	@Bean
+	public ProtobufMessageSerDe protobufMessageSerDe() {
+		return new ProtobufMessageSerDe();
+	}
 
+	@Bean
+	public XmlMessageSerDe xmlMessageSerDe() {
+		return new XmlMessageSerDe();
+	}
+
+	@Bean
+	public YamlMessageSerDe yamlMessageSerDe() {
+		return new YamlMessageSerDe();
+	}
 }

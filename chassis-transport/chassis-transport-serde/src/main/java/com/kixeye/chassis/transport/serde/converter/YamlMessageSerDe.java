@@ -20,35 +20,32 @@ package com.kixeye.chassis.transport.serde.converter;
  * #L%
  */
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
+import org.springframework.http.MediaType;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.fasterxml.jackson.module.scala.DefaultScalaModule$;
 import com.kixeye.chassis.transport.serde.MessageSerDe;
-import org.springframework.http.MediaType;
-import org.springframework.stereotype.Component;
-
-import javax.annotation.PostConstruct;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 
 /**
  * YAML-based Message SerDe
  * 
  * @author ebahtijaragic
  */
-@Component
 public class YamlMessageSerDe implements MessageSerDe {
 	private static final String MESSAGE_FORMAT_NAME = "yaml";
 	private static final MediaType[] SUPPORTED_MEDIA_TYPES = new MediaType[] { new MediaType("application", MESSAGE_FORMAT_NAME), 
 		new MediaType("text", MESSAGE_FORMAT_NAME) };
 
 	private final ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
-
-    @PostConstruct
-    public void initialize() {
+ 
+    public YamlMessageSerDe() {
         objectMapper.registerModule(DefaultScalaModule$.MODULE$);
         objectMapper.registerModule( new GuavaModule() );
         objectMapper.registerModule( new JodaModule() );
