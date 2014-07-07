@@ -50,7 +50,7 @@ public final class AppMain {
     private static Arguments arguments;
     private static boolean loggingConfigured = false;
 
-    public static final Reflections reflections = new Reflections("");
+    public static final Reflections reflections = new Reflections("", "com.kixeye");
 
     /**
      * Main entry method.
