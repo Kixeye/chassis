@@ -39,6 +39,8 @@ import org.apache.commons.lang.SystemUtils;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.zookeeper.KeeperException.NoNodeException;
 import org.reflections.Reflections;
+import org.reflections.scanners.TypeAnnotationsScanner;
+import org.reflections.util.ClasspathHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.PropertySource;
@@ -75,7 +77,6 @@ import static com.kixeye.chassis.bootstrap.BootstrapConfigKeys.*;
  * @author dturner@kixeye.com
  */
 public class ConfigurationBuilder {
-    public static final Reflections REFLECTIONS = new Reflections("com.kixeye");
     public static final String LOCAL_INSTANCE_ID = "local";
     public static final String UNKNOWN = "unknown";
 
@@ -248,7 +249,7 @@ public class ConfigurationBuilder {
             return;
         }
         HashMap<String, Object> base = new HashMap<>();
-        Set<Class<?>> types = REFLECTIONS
+        Set<Class<?>> types = AppMain.reflections
                 .getTypesAnnotatedWith(PropertySource.class);
         for (Class<?> type : types) {
             PropertySource propertySource = type

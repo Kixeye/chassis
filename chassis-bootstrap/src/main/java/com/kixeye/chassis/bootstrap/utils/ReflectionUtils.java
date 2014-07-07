@@ -21,6 +21,7 @@ package com.kixeye.chassis.bootstrap.utils;
  */
 
 import com.google.common.base.Predicate;
+import com.kixeye.chassis.bootstrap.AppMain;
 import com.kixeye.chassis.bootstrap.BootstrapException;
 import com.kixeye.chassis.bootstrap.annotation.App;
 
@@ -42,15 +43,13 @@ import java.util.Set;
  */
 public class ReflectionUtils {
 
-    private static Reflections REFLECTIONS = new Reflections("com.kixeye");
-
     /**
      * Searches everything in com.kixeye.* for classes with a Type annotation that
      *
      * @return
      */
 	public static AnnotationResult<Annotation> findApp() {
-        return findApp(REFLECTIONS);
+        return findApp(AppMain.reflections);
     }
 
     public static AnnotationResult<Annotation> findApp(Reflections reflections) {

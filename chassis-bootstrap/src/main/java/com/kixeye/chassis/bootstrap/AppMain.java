@@ -25,6 +25,7 @@ import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.spi.StringArrayOptionHandler;
+import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,6 +49,8 @@ public final class AppMain {
     public static Application application;
     private static Arguments arguments;
     private static boolean loggingConfigured = false;
+
+    public static final Reflections reflections = new Reflections("");
 
     /**
      * Main entry method.
