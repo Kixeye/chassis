@@ -1,0 +1,22 @@
+*.class
+*.jar
+*.war
+*.ear
+
+# Eclipse
+.classpath
+.loadpath
+.project
+.metadata
+.cache
+.settings/
+
+# InteliJ
+.idea/
+*.iml
+
+# Maven
+target/
+
+# Misc
+src/main/flume-data/
