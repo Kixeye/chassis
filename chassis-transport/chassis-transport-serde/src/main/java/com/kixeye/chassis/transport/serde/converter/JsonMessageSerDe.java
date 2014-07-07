@@ -24,13 +24,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.springframework.http.MediaType;
-import org.springframework.stereotype.Component;
-
-import com.dyuproject.protostuff.LinkedBuffer;
-import com.dyuproject.protostuff.ProtobufIOUtil;
-import com.dyuproject.protostuff.Schema;
-import com.dyuproject.protostuff.runtime.RuntimeSchema;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.guava.GuavaModule;
+import com.fasterxml.jackson.datatype.joda.JodaModule;
+import com.fasterxml.jackson.module.scala.DefaultScalaModule$;
+import com.google.common.net.MediaType;
 import com.kixeye.chassis.transport.serde.MessageSerDe;
 
 /**
@@ -38,61 +36,54 @@ import com.kixeye.chassis.transport.serde.MessageSerDe;
  * 
  * @author ebahtijaragic
  */
-@Component
-public class ProtobufMessageSerDe implements MessageSerDe {
-	private static final String MESSAGE_FORMAT_NAME = "protobuf";
-	private static final MediaType[] SUPPORTED_MEDIA_TYPES = new MediaType[] { new MediaType("application", MESSAGE_FORMAT_NAME) };
-	
+public class JsonMessageSerDe implements MessageSerDe {
+	private static final String MESSAGE_FORMAT_NAME = "json";
+	private static final MediaType[] SUPPORTED_MEDIA_TYPES = new MediaType[] {
+		MediaType.create("application", MESSAGE_FORMAT_NAME),
+		MediaType.create("text", MESSAGE_FORMAT_NAME) };
+
+	private final ObjectMapper objectMapper;
+
+    public JsonMessageSerDe() {
+        this.objectMapper = new ObjectMapper();
+        this.objectMapper.registerModule(DefaultScalaModule$.MODULE$);
+        this.objectMapper.registerModule( new GuavaModule() );
+        this.objectMapper.registerModule( new JodaModule() );
+    }
+    
+    public JsonMessageSerDe(ObjectMapper objectMapper) {
+        // assumes the scala portions of the object mapper have already been initialized
+        this.objectMapper = objectMapper;
+        this.objectMapper.registerModule( new GuavaModule() );
+        this.objectMapper.registerModule( new JodaModule() );
+    }
+
 	/**
 	 * @see com.kixeye.chassis.transport.serde.MessageSerDe#serialize(java.lang.Object, java.io.OutputStream)
 	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void serialize(Object obj, OutputStream stream) throws IOException {
-		Schema schema = RuntimeSchema.getSchema(obj.getClass());
-
-		LinkedBuffer linkedBuffer = LinkedBuffer.allocate(256);
-		
-		ProtobufIOUtil.writeTo(stream, obj, schema, linkedBuffer);
+		objectMapper.writeValue(stream, obj);
 	}
 
 	/**
 	 * @see com.kixeye.chassis.transport.serde.MessageSerDe#serialize(java.lang.Object)
 	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public byte[] serialize(Object obj) throws IOException {
-		Schema schema = RuntimeSchema.getSchema(obj.getClass());
-
-		LinkedBuffer linkedBuffer = LinkedBuffer.allocate(256);
-		
-		return ProtobufIOUtil.toByteArray(obj, schema, linkedBuffer);
+		return objectMapper.writeValueAsBytes(obj);
 	}
 
 	/**
 	 * @see com.kixeye.chassis.transport.serde.MessageSerDe#deserialize(byte[], int, int, java.lang.Class)
 	 */
 	public <T> T deserialize(byte[] data, int offset, int length, Class<T> clazz) throws IOException {
-		Schema<T> schema = RuntimeSchema.getSchema(clazz);
-
-		T obj = schema.newMessage();
-
-		ProtobufIOUtil.mergeFrom(data, offset, length, obj, schema);
-		
-		return obj;
+		return objectMapper.readValue(data, offset, length, clazz);
 	}
 
 	/**
 	 * @see com.kixeye.chassis.transport.serde.MessageSerDe#deserialize(java.io.InputStream, java.lang.Class)
 	 */
 	public <T> T deserialize(InputStream stream, Class<T> clazz) throws IOException {
-		Schema<T> schema = RuntimeSchema.getSchema(clazz);
-
-		T obj = schema.newMessage();
-
-		LinkedBuffer linkedBuffer = LinkedBuffer.allocate(256);
-		
-		ProtobufIOUtil.mergeFrom(stream, obj, schema, linkedBuffer);
-		
-		return obj;
+		return objectMapper.readValue(stream, clazz);
 	}
 	
 	/**

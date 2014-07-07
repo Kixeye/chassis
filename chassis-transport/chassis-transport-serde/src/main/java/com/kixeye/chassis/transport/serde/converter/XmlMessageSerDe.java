@@ -20,66 +20,64 @@ package com.kixeye.chassis.transport.serde.converter;
  * #L%
  */
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.fasterxml.jackson.datatype.guava.GuavaModule;
-import com.fasterxml.jackson.datatype.joda.JodaModule;
-import com.fasterxml.jackson.module.scala.DefaultScalaModule$;
-import com.kixeye.chassis.transport.serde.MessageSerDe;
-import org.springframework.http.MediaType;
-import org.springframework.stereotype.Component;
-
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import com.google.common.base.Charsets;
+import com.google.common.net.MediaType;
+import com.kixeye.chassis.transport.serde.MessageSerDe;
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.xml.StaxDriver;
+
 /**
- * YAML-based Message SerDe
+ * XML-based Message SerDe
  * 
  * @author ebahtijaragic
  */
-@Component
-public class YamlMessageSerDe implements MessageSerDe {
-	private static final String MESSAGE_FORMAT_NAME = "yaml";
-	private static final MediaType[] SUPPORTED_MEDIA_TYPES = new MediaType[] { new MediaType("application", MESSAGE_FORMAT_NAME), 
-		new MediaType("text", MESSAGE_FORMAT_NAME) };
+public class XmlMessageSerDe implements MessageSerDe {
+	private static final String MESSAGE_FORMAT_NAME = "xml";
+	private static final MediaType[] SUPPORTED_MEDIA_TYPES = new MediaType[] { MediaType.create("application", MESSAGE_FORMAT_NAME), 
+		MediaType.create("text", MESSAGE_FORMAT_NAME) };
 
-	private final ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
-
-    @PostConstruct
-    public void initialize() {
-        objectMapper.registerModule(DefaultScalaModule$.MODULE$);
-        objectMapper.registerModule( new GuavaModule() );
-        objectMapper.registerModule( new JodaModule() );
-    }
+	private final XStream xstream = new XStream(new StaxDriver());
 
 	/**
 	 * @see com.kixeye.chassis.transport.serde.MessageSerDe#serialize(java.lang.Object, java.io.OutputStream)
 	 */
 	public void serialize(Object obj, OutputStream stream) throws IOException {
-		objectMapper.writeValue(stream, obj);
+		xstream.toXML(obj, stream);
 	}
 
 	/**
 	 * @see com.kixeye.chassis.transport.serde.MessageSerDe#serialize(java.lang.Object)
 	 */
 	public byte[] serialize(Object obj) throws IOException {
-		return objectMapper.writeValueAsBytes(obj);
+		return xstream.toXML(obj).getBytes(Charsets.UTF_8);
 	}
 
 	/**
 	 * @see com.kixeye.chassis.transport.serde.MessageSerDe#deserialize(byte[], int, int, java.lang.Class)
 	 */
+	@SuppressWarnings("unchecked")
 	public <T> T deserialize(byte[] data, int offset, int length, Class<T> clazz) throws IOException {
-		return objectMapper.readValue(data, offset, length, clazz);
+		try {
+			return (T)xstream.fromXML(new String(data, offset, length, Charsets.UTF_8), clazz.newInstance());
+		} catch (Exception e) {
+			throw new IOException(e);
+		}
 	}
 
 	/**
 	 * @see com.kixeye.chassis.transport.serde.MessageSerDe#deserialize(java.io.OutputStream, java.lang.Class)
 	 */
+	@SuppressWarnings("unchecked")
 	public <T> T deserialize(InputStream stream, Class<T> clazz) throws IOException {
-		return objectMapper.readValue(stream, clazz);
+		try {
+			return (T)xstream.fromXML(stream, clazz.newInstance());
+		} catch (Exception e) {
+			throw new IOException(e);
+		}
 	}
 	
 	/**

@@ -24,63 +24,72 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.springframework.http.MediaType;
-import org.springframework.stereotype.Component;
-
-import com.google.common.base.Charsets;
+import com.dyuproject.protostuff.LinkedBuffer;
+import com.dyuproject.protostuff.ProtobufIOUtil;
+import com.dyuproject.protostuff.Schema;
+import com.dyuproject.protostuff.runtime.RuntimeSchema;
+import com.google.common.net.MediaType;
 import com.kixeye.chassis.transport.serde.MessageSerDe;
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.xml.StaxDriver;
 
 /**
- * XML-based Message SerDe
+ * JSON-based SerDe.
  * 
  * @author ebahtijaragic
  */
-@Component
-public class XmlMessageSerDe implements MessageSerDe {
-	private static final String MESSAGE_FORMAT_NAME = "xml";
-	private static final MediaType[] SUPPORTED_MEDIA_TYPES = new MediaType[] { new MediaType("application", MESSAGE_FORMAT_NAME), 
-		new MediaType("text", MESSAGE_FORMAT_NAME) };
-
-	private final XStream xstream = new XStream(new StaxDriver());
-
+public class ProtobufMessageSerDe implements MessageSerDe {
+	private static final String MESSAGE_FORMAT_NAME = "protobuf";
+	private static final MediaType[] SUPPORTED_MEDIA_TYPES = new MediaType[] { MediaType.create("application", MESSAGE_FORMAT_NAME) };
+	
 	/**
 	 * @see com.kixeye.chassis.transport.serde.MessageSerDe#serialize(java.lang.Object, java.io.OutputStream)
 	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void serialize(Object obj, OutputStream stream) throws IOException {
-		xstream.toXML(obj, stream);
+		Schema schema = RuntimeSchema.getSchema(obj.getClass());
+
+		LinkedBuffer linkedBuffer = LinkedBuffer.allocate(256);
+		
+		ProtobufIOUtil.writeTo(stream, obj, schema, linkedBuffer);
 	}
 
 	/**
 	 * @see com.kixeye.chassis.transport.serde.MessageSerDe#serialize(java.lang.Object)
 	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public byte[] serialize(Object obj) throws IOException {
-		return xstream.toXML(obj).getBytes(Charsets.UTF_8);
+		Schema schema = RuntimeSchema.getSchema(obj.getClass());
+
+		LinkedBuffer linkedBuffer = LinkedBuffer.allocate(256);
+		
+		return ProtobufIOUtil.toByteArray(obj, schema, linkedBuffer);
 	}
 
 	/**
 	 * @see com.kixeye.chassis.transport.serde.MessageSerDe#deserialize(byte[], int, int, java.lang.Class)
 	 */
-	@SuppressWarnings("unchecked")
 	public <T> T deserialize(byte[] data, int offset, int length, Class<T> clazz) throws IOException {
-		try {
-			return (T)xstream.fromXML(new String(data, offset, length, Charsets.UTF_8), clazz.newInstance());
-		} catch (Exception e) {
-			throw new IOException(e);
-		}
+		Schema<T> schema = RuntimeSchema.getSchema(clazz);
+
+		T obj = schema.newMessage();
+
+		ProtobufIOUtil.mergeFrom(data, offset, length, obj, schema);
+		
+		return obj;
 	}
 
 	/**
-	 * @see com.kixeye.chassis.transport.serde.MessageSerDe#deserialize(java.io.OutputStream, java.lang.Class)
+	 * @see com.kixeye.chassis.transport.serde.MessageSerDe#deserialize(java.io.InputStream, java.lang.Class)
 	 */
-	@SuppressWarnings("unchecked")
 	public <T> T deserialize(InputStream stream, Class<T> clazz) throws IOException {
-		try {
-			return (T)xstream.fromXML(stream, clazz.newInstance());
-		} catch (Exception e) {
-			throw new IOException(e);
-		}
+		Schema<T> schema = RuntimeSchema.getSchema(clazz);
+
+		T obj = schema.newMessage();
+
+		LinkedBuffer linkedBuffer = LinkedBuffer.allocate(256);
+		
+		ProtobufIOUtil.mergeFrom(stream, obj, schema, linkedBuffer);
+		
+		return obj;
 	}
 	
 	/**
