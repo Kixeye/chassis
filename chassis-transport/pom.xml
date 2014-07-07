@@ -14,7 +14,7 @@
 
     <properties>
         <swagger.version>1.2.4</swagger.version>
-        <swagger-springmvc.version>0.6.6</swagger-springmvc.version>
+        <swagger-springmvc.version>0.8.4</swagger-springmvc.version>
     </properties>
 
     <modules>

@@ -80,7 +80,7 @@
         <spring-scala.version>1.0.0.RC1</spring-scala.version>
         <slf4j.version>1.7.5</slf4j.version>
         <annotations.version>1.2</annotations.version>
-        <guava.version>14.0.1</guava.version>
+        <guava.version>15.0</guava.version>
         <metrics.version>3.0.1</metrics.version>
         <protostuff.version>1.0.8</protostuff.version>
         <hibernate.validator.version>5.0.2.Final</hibernate.validator.version>

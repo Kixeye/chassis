@@ -20,12 +20,13 @@ package com.kixeye.chassis.transport.swagger;
  * #L%
  */
 
+import com.mangofactory.swagger.controllers.DefaultSwaggerController;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.mangofactory.swagger.spring.controller.DocumentationController;
+//import com.mangofactory.swagger.spring.controller.DocumentationController;
 
 /**
  * Registers swagger with Jetty.
@@ -35,9 +36,6 @@ import com.mangofactory.swagger.spring.controller.DocumentationController;
 @Component
 public class SwaggerRegistry {
 	public static final String DEFAULT_SWAGGER_CONTEXT_PATH = "/swagger/*";
-	
-	@Autowired
-	private DocumentationController documentationController;
 	
 	/**
 	 * Registers Swagger with default context.
@@ -50,8 +48,6 @@ public class SwaggerRegistry {
 	 * Registers Swagger with context.
 	 */
 	public void registerSwagger(ServletContextHandler context, String swaggerContextPath) {
-		documentationController.setServletContext(context.getServletContext());
-
         context.addServlet(new ServletHolder(new SwaggerServlet(swaggerContextPath)), swaggerContextPath);
 	}
 }
