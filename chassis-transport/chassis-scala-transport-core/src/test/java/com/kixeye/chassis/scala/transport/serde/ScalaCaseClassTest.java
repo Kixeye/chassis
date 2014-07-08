@@ -81,8 +81,7 @@ public class ScalaCaseClassTest {
 	@Test
 	public void testYamlSerDe() throws Exception {
 		final YamlMessageSerDe serDe = new YamlMessageSerDe();
-		serDe.initialize();
-		
+
 		final TestObject obj = new TestObject(RandomStringUtils.randomAlphanumeric(64), new SomeOtherObject(RandomStringUtils.randomAlphanumeric(64)));
 		
 		final byte[] serializedObj = serDe.serialize(obj);
@@ -112,8 +111,7 @@ public class ScalaCaseClassTest {
 	@Test
 	public void testBsonSerDe() throws Exception {
 		final BsonMessageSerDe serDe = new BsonMessageSerDe();
-		serDe.initialize();
-		
+
 		final TestObject obj = new TestObject(RandomStringUtils.randomAlphanumeric(64), new SomeOtherObject(RandomStringUtils.randomAlphanumeric(64)));
 		
 		final byte[] serializedObj = serDe.serialize(obj);
