@@ -21,8 +21,18 @@ package com.kixeye.chassis.transport.swagger;
  */
 
 import com.fasterxml.classmate.ResolvedType;
+import com.fasterxml.classmate.TypeResolver;
 import com.google.common.base.Preconditions;
+import com.mangofactory.swagger.configuration.JacksonSwaggerSupport;
 import com.mangofactory.swagger.configuration.SpringSwaggerConfig;
+import com.mangofactory.swagger.models.AccessorsProvider;
+import com.mangofactory.swagger.models.DefaultModelPropertiesProvider;
+import com.mangofactory.swagger.models.DefaultModelProvider;
+import com.mangofactory.swagger.models.FieldsProvider;
+import com.mangofactory.swagger.models.ModelDependencyProvider;
+import com.mangofactory.swagger.models.ModelPropertiesProvider;
+import com.mangofactory.swagger.models.ModelProvider;
+import com.mangofactory.swagger.models.alternates.AlternateTypeProvider;
 import com.mangofactory.swagger.models.alternates.AlternateTypeRule;
 import com.mangofactory.swagger.plugin.EnableSwagger;
 import com.mangofactory.swagger.plugin.SwaggerSpringMvcPlugin;
@@ -52,9 +62,32 @@ public class SwaggerConfiguration {
     @Value("${app.version:unknown}")
     private String appVersion;
 
+    @Autowired
+    private DefaultModelPropertiesProvider defaultModelPropertiesProvider;
+
+    @Autowired
+    private TypeResolver typeResolver;
+
+    @Autowired
+    private AlternateTypeProvider alternateTypeProvider;
+
+    @Autowired
+    private AccessorsProvider accessorsProvider;
+
+    @Autowired
+    private JacksonSwaggerSupport jacksonSwaggerSupport;
+
+    @Autowired
+    private ModelDependencyProvider modelDependencyProvider;
+
     @Bean
     public SwaggerSpringMvcPlugin swaggerSpringMvcPlugin() {
+        CustomModelPropertiesProvider propertiesProvider = new CustomModelPropertiesProvider(defaultModelPropertiesProvider, typeResolver, alternateTypeProvider, accessorsProvider, jacksonSwaggerSupport);
+
+        DefaultModelProvider modelProvider = new DefaultModelProvider(typeResolver, alternateTypeProvider, propertiesProvider, modelDependencyProvider);
+
         return new SwaggerSpringMvcPlugin(springSwaggerConfig)
+                .modelProvider(modelProvider)
                 .alternateTypeRules(
                         new GenericAlternateTypeRule(ResponseEntity.class, 0, null, null),
                         new GenericAlternateTypeRule(DeferredResult.class, 0, null, null),
@@ -72,7 +105,7 @@ public class SwaggerConfiguration {
         public GenericAlternateTypeRule(Class<?> genericType, int boundTypeIndex, ResolvedType original, ResolvedType alternate) {
             super(original, alternate);
             Preconditions.checkNotNull(genericType, "genericType cannot be null");
-            Preconditions.checkArgument(boundTypeIndex >=0, "boundTypeIndex must be >= 0");
+            Preconditions.checkArgument(boundTypeIndex >= 0, "boundTypeIndex must be >= 0");
 
             this.genericType = genericType;
             this.boundTypeIndex = boundTypeIndex;
@@ -87,7 +120,6 @@ public class SwaggerConfiguration {
         public boolean appliesTo(ResolvedType type) {
             return type.getErasedType() == genericType && !type.getTypeBindings().isEmpty() && boundTypeIndex <= type.getTypeBindings().size() - 1;
         }
-
 
     }
 }
