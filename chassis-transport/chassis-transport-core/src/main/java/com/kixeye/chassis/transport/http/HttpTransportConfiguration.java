@@ -48,6 +48,7 @@ import com.kixeye.chassis.transport.SpringMvcConfiguration;
 import com.kixeye.chassis.transport.http.HttpTransportConfiguration.HttpEnabledCondition;
 import com.kixeye.chassis.transport.shared.JettyConnectorRegistry;
 import com.kixeye.chassis.transport.swagger.SwaggerRegistry;
+import com.kixeye.chassis.transport.util.SpringContextWrapper;
 
 /**
  * Configures the Http transport.
@@ -99,7 +100,7 @@ public class HttpTransportConfiguration {
         ServletContextHandler context = servletContextHandler();
 		
 		// create a new child application context
-		AnnotationConfigWebApplicationContext childApplicationContext = transportWebMvcContext(webApplicationContext, context);
+		AnnotationConfigWebApplicationContext childApplicationContext = (AnnotationConfigWebApplicationContext)transportWebMvcContext(webApplicationContext, context).getContext();
 		
 		// register swagger
 		childApplicationContext.getBean(SwaggerRegistry.class).registerSwagger(context);
@@ -155,7 +156,7 @@ public class HttpTransportConfiguration {
     }
 
     @Bean(name=HTTP_TRANSPORT_CHILD_CONTEXT_BEAN_NAME)
-    public AnnotationConfigWebApplicationContext transportWebMvcContext(ConfigurableWebApplicationContext parentContext, ServletContextHandler servletContextHandler){
+    public SpringContextWrapper transportWebMvcContext(ConfigurableWebApplicationContext parentContext, ServletContextHandler servletContextHandler){
         AnnotationConfigWebApplicationContext transportWebMvcContext = new AnnotationConfigWebApplicationContext();
         transportWebMvcContext.setDisplayName("httpTransport-webMvcContext");
         transportWebMvcContext.setServletContext(servletContextHandler.getServletContext());
@@ -165,7 +166,7 @@ public class HttpTransportConfiguration {
         transportWebMvcContext.register(PropertySourcesPlaceholderConfigurer.class);
         transportWebMvcContext.refresh();
 
-        return transportWebMvcContext;
+        return new SpringContextWrapper(transportWebMvcContext);
     }
 
     /**
