@@ -20,18 +20,6 @@ package com.kixeye.chassis.transport.websocket;
  * #L%
  */
 
-import com.google.common.collect.Lists;
-import com.kixeye.chassis.transport.websocket.responseconverter.DeferredResultResponseConverter;
-import com.kixeye.chassis.transport.websocket.responseconverter.ListenableFutureResponseConverter;
-import com.kixeye.chassis.transport.websocket.responseconverter.ObservableResponseConverter;
-import com.kixeye.chassis.transport.websocket.responseconverter.WebSocketResponseConverter;
-import org.apache.commons.lang.ObjectUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.core.MethodParameter;
-import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.context.request.async.DeferredResult;
-import javax.validation.Valid;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -46,14 +34,25 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicReference;
 
+import javax.validation.Valid;
+
+import org.apache.commons.lang.ObjectUtils;
+import org.springframework.core.MethodParameter;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.context.request.async.DeferredResult;
+
+import com.google.common.collect.Lists;
+import com.kixeye.chassis.transport.websocket.responseconverter.DeferredResultResponseConverter;
+import com.kixeye.chassis.transport.websocket.responseconverter.ListenableFutureResponseConverter;
+import com.kixeye.chassis.transport.websocket.responseconverter.ObservableResponseConverter;
+import com.kixeye.chassis.transport.websocket.responseconverter.WebSocketResponseConverter;
+
 /**
  * A web-socket action.
  *
  * @author ebahtijaragic
  */
 public class WebSocketAction {
-    private static final Logger logger = LoggerFactory.getLogger(WebSocketAction.class);
-
     static private final AtomicReference<List<WebSocketResponseConverter>> responseConverters;
 
     private final Method method;

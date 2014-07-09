@@ -54,7 +54,6 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
-import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -199,14 +198,9 @@ public class ActionInvokingWebSocket implements WebSocketListener {
 					ListenableFuture<DeferredResult<?>> invocation = serviceExecutor.submit(new Callable<DeferredResult<?>>() {
 						@Override
 						public DeferredResult<?> call() throws Exception {
-
 							// then invoke
 							return action.invoke(handler, new RawWebSocketMessage<>(envelope.getPayload(), finalMessageClass, messageValidator, serDe), envelope, webSocketSession);
 						}
-
-                        private String getTokenValue(WebSocketEnvelope envelope, String headerName) {
-                            return Iterables.get(envelope.getHeaders().get(headerName), 0, null);
-                        }
                     });
 					
 					Futures.addCallback(invocation, new FutureCallback<DeferredResult<?>>() {
