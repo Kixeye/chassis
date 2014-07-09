@@ -27,7 +27,7 @@
         </dependency>
 		<dependency>
 			<groupId>com.wordnik</groupId>
-			<artifactId>swagger-core_2.10.0</artifactId>
+			<artifactId>swagger-core_2.10</artifactId>
 			<version>${swagger.version}</version>
 			<exclusions>
 				<exclusion>
@@ -36,17 +36,18 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<dependency>
-			<groupId>com.wordnik</groupId>
-			<artifactId>swagger-annotations_2.10.0</artifactId>
-			<version>${swagger.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.slf4j</groupId>
-					<artifactId>slf4j-log4j12</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
+        <dependency>
+            <groupId>com.wordnik</groupId>
+            <artifactId>swagger-annotations</artifactId>
+            <version>${swagger-annotations.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
 
         <!-- Apache Commons -->
         <dependency>
