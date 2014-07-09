@@ -23,6 +23,9 @@ package com.kixeye.chassis.scala.transport.serde;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+import com.kixeye.chassis.transport.serde.converter.BsonJacksonMessageSerDe;
+import com.kixeye.chassis.transport.serde.converter.JsonJacksonMessageSerDe;
+import com.kixeye.chassis.transport.serde.converter.YamlJacksonMessageSerDe;
 import org.apache.commons.io.HexDump;
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.Assert;
@@ -33,11 +36,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Charsets;
 import com.kixeye.chassis.transport.serde.MessageSerDe;
-import com.kixeye.chassis.transport.serde.converter.BsonMessageSerDe;
-import com.kixeye.chassis.transport.serde.converter.JsonMessageSerDe;
 import com.kixeye.chassis.transport.serde.converter.ProtobufMessageSerDe;
 import com.kixeye.chassis.transport.serde.converter.XmlMessageSerDe;
-import com.kixeye.chassis.transport.serde.converter.YamlMessageSerDe;
 
 /**
  * Validates case-class support for various serializers.
@@ -49,7 +49,7 @@ public class ScalaCaseClassTest {
 	
 	@Test
 	public void testJsonSerDe() throws Exception {
-		final JsonMessageSerDe serDe = new JsonMessageSerDe();
+		final JsonJacksonMessageSerDe serDe = new JsonJacksonMessageSerDe();
 
 		final TestObject obj = new TestObject(RandomStringUtils.randomAlphanumeric(64), new SomeOtherObject(RandomStringUtils.randomAlphanumeric(64)));
 		
@@ -80,7 +80,7 @@ public class ScalaCaseClassTest {
 	
 	@Test
 	public void testYamlSerDe() throws Exception {
-		final YamlMessageSerDe serDe = new YamlMessageSerDe();
+		final YamlJacksonMessageSerDe serDe = new YamlJacksonMessageSerDe();
 
 		final TestObject obj = new TestObject(RandomStringUtils.randomAlphanumeric(64), new SomeOtherObject(RandomStringUtils.randomAlphanumeric(64)));
 		
@@ -110,7 +110,7 @@ public class ScalaCaseClassTest {
 	
 	@Test
 	public void testBsonSerDe() throws Exception {
-		final BsonMessageSerDe serDe = new BsonMessageSerDe();
+		final BsonJacksonMessageSerDe serDe = new BsonJacksonMessageSerDe();
 
 		final TestObject obj = new TestObject(RandomStringUtils.randomAlphanumeric(64), new SomeOtherObject(RandomStringUtils.randomAlphanumeric(64)));
 		

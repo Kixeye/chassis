@@ -21,7 +21,14 @@ package com.kixeye.chassis.transport.http;
  */
 
 import java.net.InetSocketAddress;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Function;
+import com.google.common.collect.Collections2;
+import com.kixeye.chassis.transport.serde.JacksonMessageSerDe;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -49,6 +56,7 @@ import com.kixeye.chassis.transport.http.HttpTransportConfiguration.HttpEnabledC
 import com.kixeye.chassis.transport.shared.JettyConnectorRegistry;
 import com.kixeye.chassis.transport.swagger.SwaggerRegistry;
 import com.kixeye.chassis.transport.util.SpringContextWrapper;
+import javax.annotation.Nullable;
 
 /**
  * Configures the Http transport.
@@ -103,7 +111,7 @@ public class HttpTransportConfiguration {
 		AnnotationConfigWebApplicationContext childApplicationContext = (AnnotationConfigWebApplicationContext)transportWebMvcContext(webApplicationContext, context).getContext();
 		
 		// register swagger
-		childApplicationContext.getBean(SwaggerRegistry.class).registerSwagger(context);
+		childApplicationContext.getBean(SwaggerRegistry.class).registerSwagger(context, getObjectMappers(webApplicationContext));
 		
 		// configure the spring mvc dispatcher
 		DispatcherServlet dispatcher = new DispatcherServlet(childApplicationContext);
@@ -145,6 +153,20 @@ public class HttpTransportConfiguration {
         
 		return server;
 	}
+
+    private Collection<ObjectMapper> getObjectMappers(ConfigurableWebApplicationContext webApplicationContext) {
+        Map<String, JacksonMessageSerDe> serdes = webApplicationContext.getBeansOfType(JacksonMessageSerDe.class);
+        if(serdes.isEmpty()){
+            return Collections.emptyList();
+        }
+        return Collections2.transform(serdes.values(), new Function<JacksonMessageSerDe, ObjectMapper>() {
+            @Nullable
+            @Override
+            public ObjectMapper apply(@Nullable JacksonMessageSerDe serDe) {
+                return serDe.getObjectMapper();
+            }
+        });
+    }
 
     @Bean
     public ServletContextHandler servletContextHandler(){

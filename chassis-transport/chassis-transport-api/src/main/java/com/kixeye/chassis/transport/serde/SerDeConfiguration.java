@@ -20,6 +20,9 @@ package com.kixeye.chassis.transport.serde;
  * #L%
  */
 
+import com.kixeye.chassis.transport.serde.converter.BsonJacksonMessageSerDe;
+import com.kixeye.chassis.transport.serde.converter.JsonJacksonMessageSerDe;
+import com.kixeye.chassis.transport.serde.converter.YamlJacksonMessageSerDe;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -28,11 +31,8 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.kixeye.chassis.transport.serde.converter.BsonMessageSerDe;
-import com.kixeye.chassis.transport.serde.converter.JsonMessageSerDe;
 import com.kixeye.chassis.transport.serde.converter.ProtobufMessageSerDe;
 import com.kixeye.chassis.transport.serde.converter.XmlMessageSerDe;
-import com.kixeye.chassis.transport.serde.converter.YamlMessageSerDe;
 
 /**
  * Configuration for the SerDe.
@@ -43,13 +43,13 @@ import com.kixeye.chassis.transport.serde.converter.YamlMessageSerDe;
 @ComponentScan(basePackageClasses=SerDeConfiguration.class)
 public class SerDeConfiguration {
 	@Bean
-	public BsonMessageSerDe bsonMessageSerDe() {
-		return new BsonMessageSerDe();
+	public BsonJacksonMessageSerDe bsonMessageSerDe() {
+		return new BsonJacksonMessageSerDe();
 	}
 	
 	@Bean
 	@Autowired(required=false)
-	public JsonMessageSerDe jsonMessageSerDe(ApplicationContext applicationContext) {
+	public JsonJacksonMessageSerDe jsonMessageSerDe(ApplicationContext applicationContext) {
 		ObjectMapper jacksonScalaObjectMapper = null;
 		
 		try {
@@ -59,9 +59,9 @@ public class SerDeConfiguration {
 		}
 		
 		if (jacksonScalaObjectMapper == null) {
-			return new JsonMessageSerDe();
+			return new JsonJacksonMessageSerDe();
 		} else {
-			return new JsonMessageSerDe(jacksonScalaObjectMapper);
+			return new JsonJacksonMessageSerDe(jacksonScalaObjectMapper);
 		}
 	}
 	
@@ -76,7 +76,7 @@ public class SerDeConfiguration {
 	}
 
 	@Bean
-	public YamlMessageSerDe yamlMessageSerDe() {
-		return new YamlMessageSerDe();
+	public YamlJacksonMessageSerDe yamlMessageSerDe() {
+		return new YamlJacksonMessageSerDe();
 	}
 }

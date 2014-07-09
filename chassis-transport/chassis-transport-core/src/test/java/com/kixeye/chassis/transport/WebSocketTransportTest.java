@@ -33,6 +33,8 @@ import javax.crypto.SecretKey;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import com.kixeye.chassis.transport.serde.converter.JsonJacksonMessageSerDe;
+import com.kixeye.chassis.transport.serde.converter.YamlJacksonMessageSerDe;
 import org.apache.commons.lang.RandomStringUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
@@ -57,10 +59,8 @@ import com.kixeye.chassis.transport.dto.Envelope;
 import com.kixeye.chassis.transport.dto.Header;
 import com.kixeye.chassis.transport.dto.ServiceError;
 import com.kixeye.chassis.transport.serde.MessageSerDe;
-import com.kixeye.chassis.transport.serde.converter.JsonMessageSerDe;
 import com.kixeye.chassis.transport.serde.converter.ProtobufMessageSerDe;
 import com.kixeye.chassis.transport.serde.converter.XmlMessageSerDe;
-import com.kixeye.chassis.transport.serde.converter.YamlMessageSerDe;
 import com.kixeye.chassis.transport.utils.SocketUtils;
 import com.kixeye.chassis.transport.websocket.ActionMapping;
 import com.kixeye.chassis.transport.websocket.ActionPayload;
@@ -103,7 +103,7 @@ public class WebSocketTransportTest {
 			// start client
 			wsClient.start();
 
-			final MessageSerDe serDe = context.getBean(JsonMessageSerDe.class);
+			final MessageSerDe serDe = context.getBean(JsonJacksonMessageSerDe.class);
 
 			final WebSocketMessageRegistry messageRegistry = context.getBean(WebSocketMessageRegistry.class);
 			
@@ -156,7 +156,7 @@ public class WebSocketTransportTest {
 			// start client
 			wsClient.start();
 
-			final MessageSerDe serDe = context.getBean(JsonMessageSerDe.class);
+			final MessageSerDe serDe = context.getBean(JsonJacksonMessageSerDe.class);
 
 			final WebSocketMessageRegistry messageRegistry = context.getBean(WebSocketMessageRegistry.class);
 			
@@ -205,7 +205,7 @@ public class WebSocketTransportTest {
 		try {
 			context.refresh();
 
-			final MessageSerDe serDe = context.getBean(JsonMessageSerDe.class);
+			final MessageSerDe serDe = context.getBean(JsonJacksonMessageSerDe.class);
 
 			final WebSocketMessageRegistry messageRegistry = context.getBean(WebSocketMessageRegistry.class);
 			
@@ -321,7 +321,7 @@ public class WebSocketTransportTest {
 		try {
 			context.refresh();
 
-			final MessageSerDe serDe = context.getBean(JsonMessageSerDe.class);
+			final MessageSerDe serDe = context.getBean(JsonJacksonMessageSerDe.class);
 
 			final WebSocketMessageRegistry messageRegistry = context.getBean(WebSocketMessageRegistry.class);
 			
@@ -442,7 +442,7 @@ public class WebSocketTransportTest {
 		try {
 			context.refresh();
 
-			final MessageSerDe serDe = context.getBean(JsonMessageSerDe.class);
+			final MessageSerDe serDe = context.getBean(JsonJacksonMessageSerDe.class);
 
 			final WebSocketMessageRegistry messageRegistry = context.getBean(WebSocketMessageRegistry.class);
 			
@@ -757,7 +757,7 @@ public class WebSocketTransportTest {
 		try {
 			context.refresh();
 
-			final MessageSerDe serDe = context.getBean(YamlMessageSerDe.class);
+			final MessageSerDe serDe = context.getBean(YamlJacksonMessageSerDe.class);
 
 			final WebSocketMessageRegistry messageRegistry = context.getBean(WebSocketMessageRegistry.class);
 			

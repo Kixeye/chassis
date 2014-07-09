@@ -20,13 +20,17 @@ package com.kixeye.chassis.transport.swagger;
  * #L%
  */
 
-import com.mangofactory.swagger.controllers.DefaultSwaggerController;
+import com.fasterxml.jackson.databind.Module;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.mangofactory.swagger.configuration.SwaggerApiListingJsonSerializer;
+import com.mangofactory.swagger.configuration.SwaggerResourceListingJsonSerializer;
+import com.wordnik.swagger.model.ApiListing;
+import com.wordnik.swagger.model.ResourceListing;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-//import com.mangofactory.swagger.spring.controller.DocumentationController;
+import java.util.Collection;
 
 /**
  * Registers swagger with Jetty.
@@ -36,18 +40,33 @@ import org.springframework.stereotype.Component;
 @Component
 public class SwaggerRegistry {
 	public static final String DEFAULT_SWAGGER_CONTEXT_PATH = "/swagger/*";
-	
+
 	/**
 	 * Registers Swagger with default context.
 	 */
-	public void registerSwagger(ServletContextHandler context) {
-		registerSwagger(context, DEFAULT_SWAGGER_CONTEXT_PATH);
+	public void registerSwagger(ServletContextHandler context, Collection<ObjectMapper> objectMappers) {
+		registerSwagger(context, DEFAULT_SWAGGER_CONTEXT_PATH, objectMappers);
 	}
 	
 	/**
 	 * Registers Swagger with context.
 	 */
-	public void registerSwagger(ServletContextHandler context, String swaggerContextPath) {
+	public void registerSwagger(ServletContextHandler context, String swaggerContextPath, Collection<ObjectMapper> objectMappers) {
         context.addServlet(new ServletHolder(new SwaggerServlet(swaggerContextPath)), swaggerContextPath);
+        for(ObjectMapper objectMapper:objectMappers){
+            configure(objectMapper);
+        }
 	}
+
+    private static void configure(ObjectMapper objectMapper){
+        objectMapper.registerModule(swaggerSerializationModule());
+    }
+
+    private static Module swaggerSerializationModule() {
+        SimpleModule module = new SimpleModule("SwaggerJacksonModule");
+        module.addSerializer(ApiListing.class, new SwaggerApiListingJsonSerializer());
+        module.addSerializer(ResourceListing.class, new SwaggerResourceListingJsonSerializer());
+        return module;
+    }
+
 }

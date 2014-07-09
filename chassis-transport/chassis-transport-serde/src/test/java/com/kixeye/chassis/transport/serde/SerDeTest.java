@@ -27,6 +27,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
+import com.kixeye.chassis.transport.serde.converter.BsonJacksonMessageSerDe;
+import com.kixeye.chassis.transport.serde.converter.JsonJacksonMessageSerDe;
+import com.kixeye.chassis.transport.serde.converter.YamlJacksonMessageSerDe;
 import org.apache.commons.io.HexDump;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Assert;
@@ -36,11 +39,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
-import com.kixeye.chassis.transport.serde.converter.BsonMessageSerDe;
-import com.kixeye.chassis.transport.serde.converter.JsonMessageSerDe;
 import com.kixeye.chassis.transport.serde.converter.ProtobufMessageSerDe;
 import com.kixeye.chassis.transport.serde.converter.XmlMessageSerDe;
-import com.kixeye.chassis.transport.serde.converter.YamlMessageSerDe;
 
 /**
  * Tests the various serdes.
@@ -54,7 +54,7 @@ public class SerDeTest {
 	
 	@Test
 	public void testSerDes() throws Exception {
-		for (MessageSerDe serDe : Lists.newArrayList(new BsonMessageSerDe(), new JsonMessageSerDe(), new ProtobufMessageSerDe(), new XmlMessageSerDe(), new YamlMessageSerDe())) {
+		for (MessageSerDe serDe : Lists.newArrayList(new BsonJacksonMessageSerDe(), new JsonJacksonMessageSerDe(), new ProtobufMessageSerDe(), new XmlMessageSerDe(), new YamlJacksonMessageSerDe())) {
 			logger.info("Testing SerDe: [{}], for serialization of: [{}]", serDe.getClass().getSimpleName(), serDe.getMessageFormatName());
 			
 			TestObject testObject = TestObject.generateRandom(1, true);

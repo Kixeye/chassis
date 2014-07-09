@@ -29,6 +29,7 @@ import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.fasterxml.jackson.module.scala.DefaultScalaModule$;
 import com.google.common.net.MediaType;
+import com.kixeye.chassis.transport.serde.JacksonMessageSerDe;
 import com.kixeye.chassis.transport.serde.MessageSerDe;
 
 /**
@@ -36,7 +37,7 @@ import com.kixeye.chassis.transport.serde.MessageSerDe;
  * 
  * @author ebahtijaragic
  */
-public class JsonMessageSerDe implements MessageSerDe {
+public class JsonJacksonMessageSerDe implements JacksonMessageSerDe {
 	private static final String MESSAGE_FORMAT_NAME = "json";
 	private static final MediaType[] SUPPORTED_MEDIA_TYPES = new MediaType[] {
 		MediaType.create("application", MESSAGE_FORMAT_NAME),
@@ -44,14 +45,14 @@ public class JsonMessageSerDe implements MessageSerDe {
 
 	private final ObjectMapper objectMapper;
 
-    public JsonMessageSerDe() {
+    public JsonJacksonMessageSerDe() {
         this.objectMapper = new ObjectMapper();
         this.objectMapper.registerModule(DefaultScalaModule$.MODULE$);
         this.objectMapper.registerModule( new GuavaModule() );
         this.objectMapper.registerModule( new JodaModule() );
     }
     
-    public JsonMessageSerDe(ObjectMapper objectMapper) {
+    public JsonJacksonMessageSerDe(ObjectMapper objectMapper) {
         // assumes the scala portions of the object mapper have already been initialized
         this.objectMapper = objectMapper;
         this.objectMapper.registerModule( new GuavaModule() );
@@ -99,4 +100,9 @@ public class JsonMessageSerDe implements MessageSerDe {
 	public String getMessageFormatName() {
 		return MESSAGE_FORMAT_NAME;
 	}
+
+    @Override
+    public ObjectMapper getObjectMapper() {
+        return objectMapper;
+    }
 }

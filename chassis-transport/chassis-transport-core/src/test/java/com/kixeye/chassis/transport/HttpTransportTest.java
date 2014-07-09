@@ -38,6 +38,8 @@ import javax.net.ssl.SSLSocket;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import com.kixeye.chassis.transport.serde.converter.JsonJacksonMessageSerDe;
+import com.kixeye.chassis.transport.serde.converter.YamlJacksonMessageSerDe;
 import org.apache.commons.io.HexDump;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.http.config.Registry;
@@ -88,10 +90,8 @@ import com.kixeye.chassis.transport.dto.ServiceError;
 import com.kixeye.chassis.transport.http.HttpServiceException;
 import com.kixeye.chassis.transport.http.SerDeHttpMessageConverter;
 import com.kixeye.chassis.transport.serde.MessageSerDe;
-import com.kixeye.chassis.transport.serde.converter.JsonMessageSerDe;
 import com.kixeye.chassis.transport.serde.converter.ProtobufMessageSerDe;
 import com.kixeye.chassis.transport.serde.converter.XmlMessageSerDe;
-import com.kixeye.chassis.transport.serde.converter.YamlMessageSerDe;
 import com.kixeye.chassis.transport.utils.SocketUtils;
 
 /**
@@ -148,7 +148,7 @@ public class HttpTransportTest {
 		try {
 			context.refresh();
 
-			final MessageSerDe serDe = context.getBean(JsonMessageSerDe.class);
+			final MessageSerDe serDe = context.getBean(JsonJacksonMessageSerDe.class);
 
 			RestTemplate httpClient = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
 			httpClient.setErrorHandler(new ResponseErrorHandler() {
@@ -243,7 +243,7 @@ public class HttpTransportTest {
 		try {
 			context.refresh();
 
-			final MessageSerDe serDe = context.getBean(JsonMessageSerDe.class);
+			final MessageSerDe serDe = context.getBean(JsonJacksonMessageSerDe.class);
 			
 			SSLContextBuilder builder = SSLContexts.custom();
             builder.loadTrustMaterial(null, new TrustStrategy() {
@@ -384,7 +384,7 @@ public class HttpTransportTest {
 		try {
 			context.refresh();
 
-			final MessageSerDe serDe = context.getBean(JsonMessageSerDe.class);
+			final MessageSerDe serDe = context.getBean(JsonJacksonMessageSerDe.class);
 			
 			SSLContextBuilder builder = SSLContexts.custom();
             builder.loadTrustMaterial(null, new TrustStrategy() {
@@ -751,7 +751,7 @@ public class HttpTransportTest {
 		try {
 			context.refresh();
 			
-			final MessageSerDe serDe = context.getBean(YamlMessageSerDe.class);
+			final MessageSerDe serDe = context.getBean(YamlJacksonMessageSerDe.class);
 
 			RestTemplate httpClient = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
 			httpClient.setErrorHandler(new ResponseErrorHandler() {

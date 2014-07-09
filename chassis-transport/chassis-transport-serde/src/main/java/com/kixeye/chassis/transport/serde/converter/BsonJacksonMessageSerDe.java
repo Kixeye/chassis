@@ -24,31 +24,49 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import com.fasterxml.jackson.core.ObjectCodec;
+import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.fasterxml.jackson.module.scala.DefaultScalaModule$;
 import com.google.common.net.MediaType;
+import com.kixeye.chassis.transport.serde.JacksonMessageSerDe;
 import com.kixeye.chassis.transport.serde.MessageSerDe;
+import com.kixeye.chassis.transport.serde.bson.KixeyeBsonParser;
+
+import de.undercouch.bson4jackson.BsonFactory;
 
 /**
- * YAML-based Message SerDe
+ * BSON-based SerDe.
  * 
  * @author ebahtijaragic
  */
-public class YamlMessageSerDe implements MessageSerDe {
-	private static final String MESSAGE_FORMAT_NAME = "yaml";
-	private static final MediaType[] SUPPORTED_MEDIA_TYPES = new MediaType[] { MediaType.create("application", MESSAGE_FORMAT_NAME), 
-		MediaType.create("text", MESSAGE_FORMAT_NAME) };
+public class BsonJacksonMessageSerDe implements JacksonMessageSerDe {
+	private static final String MESSAGE_FORMAT_NAME = "bson";
+	private static final MediaType[] SUPPORTED_MEDIA_TYPES = new MediaType[] { MediaType.create("application", MESSAGE_FORMAT_NAME) };
 
-	private final ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
- 
-    public YamlMessageSerDe() {
-        objectMapper.registerModule(DefaultScalaModule$.MODULE$);
+	private ObjectMapper objectMapper = new ObjectMapper(new BsonFactory() {
+		private static final long serialVersionUID = 1937650622229505600L;
+		
+		@Override
+		protected KixeyeBsonParser _createParser(InputStream in, IOContext ctxt) {
+			KixeyeBsonParser p = new KixeyeBsonParser(ctxt, _parserFeatures, _bsonParserFeatures, in);
+			ObjectCodec codec = getCodec();
+			if (codec != null) {
+				p.setCodec(codec);
+			}
+			return p;
+		}
+	});
+
+    public BsonJacksonMessageSerDe() {
+        objectMapper.registerModule( DefaultScalaModule$.MODULE$ );
         objectMapper.registerModule( new GuavaModule() );
         objectMapper.registerModule( new JodaModule() );
     }
+
+
 
 	/**
 	 * @see com.kixeye.chassis.transport.serde.MessageSerDe#serialize(java.lang.Object, java.io.OutputStream)
@@ -77,7 +95,7 @@ public class YamlMessageSerDe implements MessageSerDe {
 	public <T> T deserialize(InputStream stream, Class<T> clazz) throws IOException {
 		return objectMapper.readValue(stream, clazz);
 	}
-	
+
 	/**
 	 * @see com.kixeye.chassis.transport.serde.MessageSerDe#getSupportedMediaTypes()
 	 */
@@ -91,4 +109,9 @@ public class YamlMessageSerDe implements MessageSerDe {
 	public String getMessageFormatName() {
 		return MESSAGE_FORMAT_NAME;
 	}
+
+    @Override
+    public ObjectMapper getObjectMapper() {
+        return objectMapper;
+    }
 }
