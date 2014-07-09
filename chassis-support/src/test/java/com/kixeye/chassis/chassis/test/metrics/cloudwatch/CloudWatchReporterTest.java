@@ -20,6 +20,16 @@ package com.kixeye.chassis.chassis.test.metrics.cloudwatch;
  * #L%
  */
 
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+
+import org.hamcrest.BaseMatcher;
+import org.hamcrest.Description;
+import org.junit.After;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.mockito.Mockito;
+
 import com.amazonaws.services.cloudwatch.AmazonCloudWatch;
 import com.amazonaws.services.cloudwatch.model.MetricDatum;
 import com.amazonaws.services.cloudwatch.model.PutMetricDataRequest;
@@ -28,13 +38,6 @@ import com.codahale.metrics.MetricRegistry;
 import com.google.common.io.Closeables;
 import com.kixeye.chassis.chassis.metrics.aws.CloudWatchFactory;
 import com.kixeye.chassis.chassis.metrics.aws.MetricsCloudWatchReporter;
-import org.hamcrest.BaseMatcher;
-import org.hamcrest.Description;
-import org.junit.After;
-import org.junit.Test;
-import org.mockito.Mockito;
-import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Unit test for MetricsCloudWatchRepoter
@@ -183,6 +186,7 @@ public class CloudWatchReporterTest {
      * Ensure that a failed publication does not prevent subsequent attempts
      */
     @Test
+    @Ignore("Fix the thread sleeps.")
     public void testRecoverAfterFailedPublication() throws InterruptedException {
         MetricRegistry metricRegistry = new MetricRegistry();
 

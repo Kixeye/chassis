@@ -20,6 +20,18 @@ package com.kixeye.chassis.bootstrap;
  * #L%
  */
 
+import static com.kixeye.chassis.bootstrap.BootstrapConfigKeys.APP_ENVIRONMENT_KEY;
+import static com.kixeye.chassis.bootstrap.BootstrapConfigKeys.APP_NAME_KEY;
+import static com.kixeye.chassis.bootstrap.BootstrapConfigKeys.APP_VERSION_KEY;
+import static com.kixeye.chassis.bootstrap.BootstrapConfigKeys.AWS_INSTANCE_AVAILABILITY_ZONE;
+import static com.kixeye.chassis.bootstrap.BootstrapConfigKeys.AWS_INSTANCE_ID;
+import static com.kixeye.chassis.bootstrap.BootstrapConfigKeys.AWS_INSTANCE_NAME;
+import static com.kixeye.chassis.bootstrap.BootstrapConfigKeys.AWS_INSTANCE_PRIVATE_IP;
+import static com.kixeye.chassis.bootstrap.BootstrapConfigKeys.AWS_INSTANCE_PUBLIC_IP;
+import static com.kixeye.chassis.bootstrap.BootstrapConfigKeys.AWS_INSTANCE_REGION;
+import static com.kixeye.chassis.bootstrap.BootstrapConfigKeys.AWS_METADATA_TIMEOUTSECONDS;
+import static com.kixeye.chassis.bootstrap.BootstrapConfigKeys.ZOOKEEPER_CONFIG_BASE_PATH;
+
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -30,7 +42,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import com.google.common.base.Joiner;
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.SystemConfiguration;
@@ -38,15 +49,13 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.zookeeper.KeeperException.NoNodeException;
-import org.reflections.Reflections;
-import org.reflections.scanners.TypeAnnotationsScanner;
-import org.reflections.util.ClasspathHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.util.SystemPropertyUtils;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.kixeye.chassis.bootstrap.BootstrapException.MissingApplicationConfigurationInZookeeperException;
 import com.kixeye.chassis.bootstrap.aws.AwsInstanceContext;
@@ -55,8 +64,6 @@ import com.netflix.config.ConcurrentMapConfiguration;
 import com.netflix.config.ConfigurationManager;
 import com.netflix.config.DynamicWatchedConfiguration;
 import com.netflix.config.source.ZooKeeperConfigurationSource;
-
-import static com.kixeye.chassis.bootstrap.BootstrapConfigKeys.*;
 
 /**
  * Builder class for creating the client application's configuration.  Configurations are hierarchical, and property lookup

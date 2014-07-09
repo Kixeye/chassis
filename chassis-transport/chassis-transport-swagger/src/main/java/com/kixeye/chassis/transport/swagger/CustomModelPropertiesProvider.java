@@ -19,6 +19,15 @@
  */
 package com.kixeye.chassis.transport.swagger;
 
+import static com.google.common.collect.Lists.newArrayList;
+
+import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.regex.Pattern;
+
 import com.fasterxml.classmate.ResolvedType;
 import com.fasterxml.classmate.TypeResolver;
 import com.fasterxml.classmate.members.ResolvedMethod;
@@ -29,9 +38,7 @@ import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.introspect.AnnotatedConstructor;
 import com.fasterxml.jackson.databind.introspect.AnnotationMap;
 import com.fasterxml.jackson.databind.type.TypeFactory;
-import com.google.common.base.Function;
 import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.Iterables;
 import com.mangofactory.swagger.configuration.JacksonSwaggerSupport;
 import com.mangofactory.swagger.models.AccessorsProvider;
@@ -40,16 +47,6 @@ import com.mangofactory.swagger.models.DefaultModelPropertiesProvider;
 import com.mangofactory.swagger.models.ModelPropertiesProvider;
 import com.mangofactory.swagger.models.ModelProperty;
 import com.mangofactory.swagger.models.alternates.AlternateTypeProvider;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.regex.Pattern;
-
-import static com.google.common.collect.Lists.newArrayList;
 
 /**
  * A hack which provides support for Jackson's @JsonCreator. This provider

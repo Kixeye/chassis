@@ -4,6 +4,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.core.MethodParameter;
+
 import java.lang.reflect.Method;
 
 /**
@@ -11,9 +12,10 @@ import java.lang.reflect.Method;
  *
  * @author dturner@kixeye.com
  */
+@SuppressWarnings("rawtypes")
 public class WebSocketActionTest {
 
-    @Test
+	@Test
     public void testActionWithSingleCustomArgResolver() throws Exception {
         Method method = WebSocketActionTest.class.getMethod("handler", String.class);
         WebSocketActionArgumentResolver arg1Resolver = new WebSocketActionArgumentResolver() {
@@ -141,7 +143,8 @@ public class WebSocketActionTest {
                 return "2";
             }
         };
-        WebSocketAction action = new WebSocketAction(method, null, arg1Resolver, arg2Resolver);
+        
+        new WebSocketAction(method, null, arg1Resolver, arg2Resolver);
 
         Assert.fail();
     }

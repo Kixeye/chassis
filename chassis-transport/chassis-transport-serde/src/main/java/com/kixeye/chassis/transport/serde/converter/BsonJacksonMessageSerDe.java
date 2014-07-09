@@ -32,7 +32,6 @@ import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.fasterxml.jackson.module.scala.DefaultScalaModule$;
 import com.google.common.net.MediaType;
 import com.kixeye.chassis.transport.serde.JacksonMessageSerDe;
-import com.kixeye.chassis.transport.serde.MessageSerDe;
 import com.kixeye.chassis.transport.serde.bson.KixeyeBsonParser;
 
 import de.undercouch.bson4jackson.BsonFactory;
