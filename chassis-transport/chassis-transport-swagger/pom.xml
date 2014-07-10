@@ -30,6 +30,10 @@
 			<artifactId>swagger-core_2.10</artifactId>
 			<version>${swagger.version}</version>
 			<exclusions>
+                <exclusion>
+                    <groupId>com.wordnik</groupId>
+                    <artifactId>swagger-annotations_2.10</artifactId>
+                </exclusion>
 				<exclusion>
 					<groupId>org.slf4j</groupId>
 					<artifactId>slf4j-log4j12</artifactId>
