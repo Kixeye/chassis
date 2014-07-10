@@ -19,98 +19,60 @@
  */
 package com.kixeye.chassis.transport.swagger;
 
-import static com.google.common.collect.Lists.newArrayList;
-
-import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.regex.Pattern;
-
 import com.fasterxml.classmate.ResolvedType;
-import com.fasterxml.classmate.TypeResolver;
-import com.fasterxml.classmate.members.ResolvedMethod;
-import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.classmate.members.ResolvedConstructor;
+import com.fasterxml.classmate.members.ResolvedMember;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.BeanDescription;
-import com.fasterxml.jackson.databind.DeserializationConfig;
-import com.fasterxml.jackson.databind.introspect.AnnotatedConstructor;
-import com.fasterxml.jackson.databind.introspect.AnnotationMap;
-import com.fasterxml.jackson.databind.type.TypeFactory;
-import com.google.common.base.Predicate;
+import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
-import com.mangofactory.swagger.configuration.JacksonSwaggerSupport;
-import com.mangofactory.swagger.models.AccessorsProvider;
-import com.mangofactory.swagger.models.BeanModelProperty;
 import com.mangofactory.swagger.models.DefaultModelPropertiesProvider;
+import com.mangofactory.swagger.models.ModelContext;
 import com.mangofactory.swagger.models.ModelPropertiesProvider;
 import com.mangofactory.swagger.models.ModelProperty;
 import com.mangofactory.swagger.models.alternates.AlternateTypeProvider;
+import com.wordnik.swagger.model.AllowableValues;
+import scala.Option;
+import java.util.List;
+
+import static com.google.common.collect.Lists.newArrayList;
 
 /**
- * A hack which provides support for Jackson's @JsonCreator. This provider
- * will consider any @JsonProperty parameters within a @JsonCreator constructor
- * to be valid model properties if there is an associated getter method with the
- * same property value.
- *
+ * Provides support for Jackson's @JsonCreator. This provider
+ * will consider any @JsonProperty parameters within a @JsonCreator constructor.
+ * <p/>
  * for example:
- *
+ * <pre>
+ * @code
  * class Message{
  *
  *     private String data
  *
- *     public MyClass(@JsonProperty("data") String data){
+ *     @JsonCreator
+ *     public MyClass(@JsonProperty(value="data", required=true) String data){
  *         this.data = data;
  *     }
  *
- *     @ApiModelProperty(required = true)
  *     @JsonProperty("data")
  *     public String getData(){
  *         return this.data;
  *     }
  * }
- *
+ * </pre>
  * Swagger model attributes will be read from the getter @ApiModelProperty annotation (as above).
- *
- * @author dturner@kixeye.com
  */
 public class CustomModelPropertiesProvider implements ModelPropertiesProvider {
 
-    private static Pattern getter = Pattern.compile("^get([a-zA-Z_0-9].*)");
-    private static Pattern isGetter = Pattern.compile("^is([a-zA-Z_0_9].*)");
-
-    private AccessorsProvider accessorsProvider;
+    private CustomAccessorsProvider accessorsProvider;
     private AlternateTypeProvider alternateTypeProvider;
-    private DeserializationConfig deserializationConfig;
-    private TypeResolver typeResolver;
     private DefaultModelPropertiesProvider defaultModelPropertiesProvider;
 
     public CustomModelPropertiesProvider(
             DefaultModelPropertiesProvider defaultModelPropertiesProvider,
-            TypeResolver typeResolver,
             AlternateTypeProvider alternateTypeProvider,
-            AccessorsProvider accessorsProvider,
-            JacksonSwaggerSupport jacksonSwaggerSupport) {
+            CustomAccessorsProvider accessorsProvider) {
         this.accessorsProvider = accessorsProvider;
         this.alternateTypeProvider = alternateTypeProvider;
-        this.typeResolver = typeResolver;
         this.defaultModelPropertiesProvider = defaultModelPropertiesProvider;
-        this.deserializationConfig = jacksonSwaggerSupport.getSpringsMessageConverterObjectMapper().getDeserializationConfig();
-    }
-
-    public boolean isGetter(Method method) {
-        if (method.getParameterTypes().length == 0) {
-            if (getter.matcher(method.getName()).find() &&
-                    !method.getReturnType().equals(void.class)) {
-                return true;
-            }
-            if (isGetter.matcher(method.getName()).find() &&
-                    method.getReturnType().equals(boolean.class)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     @Override
@@ -122,55 +84,85 @@ public class CustomModelPropertiesProvider implements ModelPropertiesProvider {
     public Iterable<? extends ModelProperty> propertiesForDeserialization(ResolvedType type) {
         List<ModelProperty> deserializableProperties = newArrayList();
         deserializableProperties.addAll(defaultModelPropertiesProvider.deserializableProperties(type));
+        wrapModelProperties(deserializableProperties);
+        return addConstructors(deserializableProperties, type);
+    }
 
-        BeanDescription beanDescription = deserializationConfig.introspect(TypeFactory.defaultInstance()
-                .constructType(type.getErasedType()));
-
-        List<AnnotatedConstructor> annotatedConstructors = beanDescription.getConstructors();
-
-        if (annotatedConstructors.isEmpty()) {
-            return deserializableProperties;
+    private Iterable<? extends ModelProperty> addConstructors(List<ModelProperty> deserializableProperties, ResolvedType type) {
+        for (ResolvedConstructor constructor : accessorsProvider.constructorsIn(type)) {
+            deserializableProperties.addAll(ConstructorParameterModelProperty.getModelProperties(constructor, alternateTypeProvider));
         }
-
-        for (AnnotatedConstructor annotatedConstructor : annotatedConstructors) {
-            if (annotatedConstructor.getAnnotation(JsonCreator.class) == null) {
-                continue;
-            }
-            Collection<JsonProperty> jsonProperties = findJsonProperties(annotatedConstructor);
-            for (JsonProperty jsonProperty : jsonProperties) {
-                ResolvedMethod getter = findGetterByJsonPropertyValue(jsonProperty.value(), type);
-                if (getter == null) {
-                    continue;
-                }
-                deserializableProperties.add(new BeanModelProperty(jsonProperty.value(),
-                        getter, true, typeResolver, alternateTypeProvider));
-            }
-        }
-
         return deserializableProperties;
     }
 
-    private ResolvedMethod findGetterByJsonPropertyValue(final String value, ResolvedType resolvedType) {
-        return Iterables.tryFind(accessorsProvider.in(resolvedType), new Predicate<ResolvedMethod>() {
+    private Iterable<? extends ModelProperty> wrapModelProperties(List<ModelProperty> deserializableProperties) {
+        return Iterables.transform(deserializableProperties, new Function<ModelProperty, ModelProperty>() {
             @Override
-            public boolean apply(ResolvedMethod resolvedMethod) {
-                JsonProperty jsonProperty = resolvedMethod.getRawMember().getAnnotation(JsonProperty.class);
-                return jsonProperty != null && jsonProperty.value().endsWith(value) && isGetter(resolvedMethod.getRawMember());
+            public ModelProperty apply(ModelProperty modelProperty) {
+                /*TODO
+                  submitted pull request to have getters added to ModelProperty classes (code below).
+                  When accepted, we'll wrap the ModelProperty objects to override the "isRequired()" behavior
+                  to use @JsonProperty(required=..) instead of @ApiModelProperty(required=..)
+
+                  https://github.com/martypitt/swagger-springmvc/pull/358
+                 */
+//                if(modelProperty instanceof BeanModelProperty){
+//                    return new ModelPropertyWrapper(modelProperty, ((BeanModelProperty) modelProperty).getMethod());
+//                } else if (modelProperty instanceof FieldModelProperty){
+//                    return new ModelPropertyWrapper(modelProperty, ((FieldModelProperty) modelProperty).getChildField());
+//                }
+                return modelProperty;
             }
-        }).orNull();
+        });
     }
 
-    private Collection<JsonProperty> findJsonProperties(AnnotatedConstructor annotatedConstructor) {
-        Set<JsonProperty> properties = new HashSet<>();
+    private class ModelPropertyWrapper implements ModelProperty {
 
-        for(int i = 0; i< annotatedConstructor.getParameterCount();i++){
-            AnnotationMap map = annotatedConstructor.getParameterAnnotations(i);
-            JsonProperty prop = map.get(JsonProperty.class);
-            if(prop != null){
-                properties.add(prop);
-            }
+        private final ModelProperty wrapped;
+        private final ResolvedMember resolvedMember;
+
+        public ModelPropertyWrapper(ModelProperty wrapped, ResolvedMember resolvedMember) {
+            this.wrapped = wrapped;
+            this.resolvedMember = resolvedMember;
         }
 
-        return properties;
+        @Override
+        public String getName() {
+            return wrapped.getName();
+        }
+
+        @Override
+        public ResolvedType getType() {
+            return wrapped.getType();
+        }
+
+        @Override
+        public String typeName(ModelContext modelContext) {
+            return wrapped.typeName(modelContext);
+        }
+
+        @Override
+        public String qualifiedTypeName() {
+            return wrapped.qualifiedTypeName();
+        }
+
+        @Override
+        public AllowableValues allowableValues() {
+            return wrapped.allowableValues();
+        }
+
+        @Override
+        public Option<String> propertyDescription() {
+            return wrapped.propertyDescription();
+        }
+
+        @Override
+        public boolean isRequired() {
+            JsonProperty jsonProperty = resolvedMember.get(JsonProperty.class);
+            if (jsonProperty != null) {
+                return jsonProperty.required();
+            }
+            return wrapped.isRequired();
+        }
     }
 }

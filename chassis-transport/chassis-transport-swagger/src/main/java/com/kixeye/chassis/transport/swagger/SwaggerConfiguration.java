@@ -20,22 +20,10 @@ package com.kixeye.chassis.transport.swagger;
  * #L%
  */
 
-import java.util.concurrent.Future;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.context.request.async.DeferredResult;
-
 import com.fasterxml.classmate.ResolvedType;
 import com.fasterxml.classmate.TypeResolver;
 import com.google.common.base.Preconditions;
-import com.mangofactory.swagger.configuration.JacksonSwaggerSupport;
 import com.mangofactory.swagger.configuration.SpringSwaggerConfig;
-import com.mangofactory.swagger.models.AccessorsProvider;
 import com.mangofactory.swagger.models.DefaultModelPropertiesProvider;
 import com.mangofactory.swagger.models.DefaultModelProvider;
 import com.mangofactory.swagger.models.ModelDependencyProvider;
@@ -44,6 +32,14 @@ import com.mangofactory.swagger.models.alternates.AlternateTypeRule;
 import com.mangofactory.swagger.plugin.EnableSwagger;
 import com.mangofactory.swagger.plugin.SwaggerSpringMvcPlugin;
 import com.wordnik.swagger.model.ApiInfo;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.context.request.async.DeferredResult;
+import java.util.concurrent.Future;
 
 /**
  * Configures Swagger.
@@ -71,17 +67,11 @@ public class SwaggerConfiguration {
     private AlternateTypeProvider alternateTypeProvider;
 
     @Autowired
-    private AccessorsProvider accessorsProvider;
-
-    @Autowired
-    private JacksonSwaggerSupport jacksonSwaggerSupport;
-
-    @Autowired
     private ModelDependencyProvider modelDependencyProvider;
 
     @Bean
     public SwaggerSpringMvcPlugin swaggerSpringMvcPlugin() {
-        CustomModelPropertiesProvider propertiesProvider = new CustomModelPropertiesProvider(defaultModelPropertiesProvider, typeResolver, alternateTypeProvider, accessorsProvider, jacksonSwaggerSupport);
+        CustomModelPropertiesProvider propertiesProvider = new CustomModelPropertiesProvider(defaultModelPropertiesProvider, alternateTypeProvider, new CustomAccessorsProvider(typeResolver));
 
         DefaultModelProvider modelProvider = new DefaultModelProvider(typeResolver, alternateTypeProvider, propertiesProvider, modelDependencyProvider);
 
