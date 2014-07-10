@@ -15,7 +15,7 @@
     <properties>
         <swagger.version>1.3.0</swagger.version>
         <swagger-annotations.version>1.3.5</swagger-annotations.version>
-        <swagger-springmvc.version>0.8.4</swagger-springmvc.version>
+        <swagger-springmvc.version>0.8.5</swagger-springmvc.version>
     </properties>
 
     <modules>
