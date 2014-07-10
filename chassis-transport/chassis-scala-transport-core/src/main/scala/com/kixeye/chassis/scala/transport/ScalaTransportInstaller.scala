@@ -1,14 +1,4 @@
 package com.kixeye.chassis.scala.transport
-
-import org.springframework.stereotype.Component
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter
-import javax.annotation.PostConstruct
-import org.springframework.web.method.support.HandlerMethodReturnValueHandler
-import com.kixeye.chassis.scala.transport.http.ScalaFutureReturnValueHandler
-import com.kixeye.chassis.transport.websocket.WebSocketAction
-import com.kixeye.chassis.scala.transport.websocket.responseconverter.ScalaFutureWebSocketResponseConverter
-
 /*
  * #%L
  * Chassis Scala Transport Core
@@ -29,20 +19,60 @@ import com.kixeye.chassis.scala.transport.websocket.responseconverter.ScalaFutur
  * #L%
  */
 
+import org.springframework.stereotype.Component
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter
+import javax.annotation.PostConstruct
+import org.springframework.web.method.support.HandlerMethodReturnValueHandler
+import com.kixeye.chassis.scala.transport.http.ScalaFutureReturnValueHandler
+import com.kixeye.chassis.transport.websocket.WebSocketAction
+import com.kixeye.chassis.scala.transport.websocket.responseconverter.ScalaFutureWebSocketResponseConverter
+import com.kixeye.chassis.transport.util.SpringContextWrapper
+import org.springframework.context.ApplicationContext
+
+
+/**
+ * Registers a ScalaFutureReturnValueHandler with spring mvc framework
+ */
 @Component
-class ScalaTransportInstaller @Autowired(required = false) (requestMappingHandlerAdapter: RequestMappingHandlerAdapter) {
+class ScalaTransportInstaller @Autowired(required = false) (applicationContext: ApplicationContext) {
 
   @PostConstruct
   def initialize() : Unit = {
     // Register a Scala Future HTTP response handler with SpringMVC
-    if (requestMappingHandlerAdapter != null) {
-      val handlers = new java.util.ArrayList[HandlerMethodReturnValueHandler](requestMappingHandlerAdapter.getReturnValueHandlers)
-      handlers.add(0, new ScalaFutureReturnValueHandler())
-      requestMappingHandlerAdapter.setReturnValueHandlers(handlers)
-    }
+
+    registerReturnValueHandler(applicationContext)
+
+    // in chassis, spring mvc context is registered as a child context of the main chassis context.  the child
+    // context is exposed to the parent via the SpringContextWrapper. If found, register the handler with
+    // the RequestMappingHandlerAdapter of the child.
+    val childContext = getBeanOfTypeQuietly(classOf[SpringContextWrapper], applicationContext)
+    childContext.foreach(wrapper => registerReturnValueHandler(wrapper.getContext))
 
     // Register a Scala Future converter with the web socket handler
     WebSocketAction.addWebSocketResponseConverter( new ScalaFutureWebSocketResponseConverter() )
+  }
+
+  def registerReturnValueHandler(applicationContext: ApplicationContext) : Unit = {
+      registerReturnValueHandler(getBeanOfTypeQuietly(classOf[RequestMappingHandlerAdapter], applicationContext))
+  }
+
+  def registerReturnValueHandler(requestMappingHandlerAdapterOption: Option[RequestMappingHandlerAdapter]) : Unit = {
+    if(requestMappingHandlerAdapterOption.isEmpty){
+      return
+    }
+    val requestMappingHandlerAdapter = requestMappingHandlerAdapterOption.get
+    val handlers = new java.util.ArrayList[HandlerMethodReturnValueHandler](requestMappingHandlerAdapter.getReturnValueHandlers)
+    handlers.add(0, new ScalaFutureReturnValueHandler())
+    requestMappingHandlerAdapter.setReturnValueHandlers(handlers)
+  }
+
+  def getBeanOfTypeQuietly [T] (beanClass: Class[T], applicationContext: ApplicationContext): Option[T] = {
+    val t = applicationContext.getBeansOfType(beanClass)
+    if(t.isEmpty){
+      return Option.empty
+    }
+    Option(t.values().iterator().next())
   }
 
 }
