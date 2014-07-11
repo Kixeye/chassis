@@ -77,22 +77,28 @@ public class CustomModelPropertiesProvider implements ModelPropertiesProvider {
 
     @Override
     public Iterable<? extends ModelProperty> propertiesForSerialization(ResolvedType type) {
-        return defaultModelPropertiesProvider.propertiesForSerialization(type);
+        List<ModelProperty> serializableProperties = newArrayList();
+        Iterables.addAll(serializableProperties,defaultModelPropertiesProvider.propertiesForSerialization(type));
+        if(type.isInstanceOf(scala.Product.class)){
+           //special case for Scala Case Classes.  fields are defined in the constructor
+           addConstructors(serializableProperties, type);
+        }
+        return serializableProperties;
     }
 
     @Override
     public Iterable<? extends ModelProperty> propertiesForDeserialization(ResolvedType type) {
         List<ModelProperty> deserializableProperties = newArrayList();
-        deserializableProperties.addAll(defaultModelPropertiesProvider.deserializableProperties(type));
+        Iterables.addAll(deserializableProperties,defaultModelPropertiesProvider.propertiesForDeserialization(type));
         wrapModelProperties(deserializableProperties);
         return addConstructors(deserializableProperties, type);
     }
 
-    private Iterable<? extends ModelProperty> addConstructors(List<ModelProperty> deserializableProperties, ResolvedType type) {
+    private Iterable<? extends ModelProperty> addConstructors(List<ModelProperty> properties, ResolvedType type) {
         for (ResolvedConstructor constructor : accessorsProvider.constructorsIn(type)) {
-            deserializableProperties.addAll(ConstructorParameterModelProperty.getModelProperties(constructor, alternateTypeProvider));
+            properties.addAll(ConstructorParameterModelProperty.getModelProperties(constructor, alternateTypeProvider));
         }
-        return deserializableProperties;
+        return properties;
     }
 
     private Iterable<? extends ModelProperty> wrapModelProperties(List<ModelProperty> deserializableProperties) {

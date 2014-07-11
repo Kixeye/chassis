@@ -46,7 +46,7 @@ public class ConstructorParameterModelProperty implements ModelProperty {
 
     /**
      * Creates a collection of ConstructorParameterModelProperty objects from the arguments of the given ResolvedConstructor.
-     * Only args annoated with @JsonProperty are included.
+     * Only args annotated with @JsonProperty are included. Scala Case Classes are a special case and do not require the annotation.
      *
      * @param resolvedConstructor the constructor to get
      * @param alternateTypeProvider for resolving alternative types for the found arguments
@@ -54,14 +54,14 @@ public class ConstructorParameterModelProperty implements ModelProperty {
      */
     public static ImmutableList<ConstructorParameterModelProperty> getModelProperties(ResolvedConstructor resolvedConstructor, AlternateTypeProvider alternateTypeProvider){
         Builder<ConstructorParameterModelProperty> listBuilder = new Builder<>();
-        if(resolvedConstructor.getRawMember().getAnnotation(JsonCreator.class) == null){
-            return listBuilder.build();
-        }
-        for(int i=0;i<resolvedConstructor.getArgumentCount();i++){
-            AnnotationMap annotationMap = annotationMap(resolvedConstructor.getRawMember().getParameterAnnotations()[i]);
-            ResolvedType parameterType = resolvedConstructor.getArgumentType(i);
-            if(annotationMap.get(JsonProperty.class) != null){
-               listBuilder.add(new ConstructorParameterModelProperty(parameterType, alternateTypeProvider, annotationMap));
+        if(resolvedConstructor.getRawMember().getAnnotation(JsonCreator.class) != null || resolvedConstructor.getDeclaringType().isInstanceOf(scala.Product.class)){
+            //constructor for normal classes must be annotated with @JsonCreator. Scala Case Classes are a special case
+            for(int i=0;i<resolvedConstructor.getArgumentCount();i++){
+                AnnotationMap annotationMap = annotationMap(resolvedConstructor.getRawMember().getParameterAnnotations()[i]);
+                ResolvedType parameterType = resolvedConstructor.getArgumentType(i);
+                if(annotationMap.get(JsonProperty.class) != null){
+                    listBuilder.add(new ConstructorParameterModelProperty(parameterType, alternateTypeProvider, annotationMap));
+                }
             }
         }
         return listBuilder.build();
