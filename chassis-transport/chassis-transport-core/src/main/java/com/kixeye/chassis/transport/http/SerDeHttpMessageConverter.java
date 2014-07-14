@@ -22,6 +22,7 @@ package com.kixeye.chassis.transport.http;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
 
@@ -64,6 +65,9 @@ public class SerDeHttpMessageConverter extends AbstractHttpMessageConverter<Obje
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public Object read(Type type, Class<?> contextClass, HttpInputMessage inputMessage) throws IOException, HttpMessageNotReadableException {
+        if(type instanceof ParameterizedType){
+            type = ((ParameterizedType) type).getRawType();
+        }
 		return serDe.deserialize(inputMessage.getBody(), (Class)type);
 	}
 
