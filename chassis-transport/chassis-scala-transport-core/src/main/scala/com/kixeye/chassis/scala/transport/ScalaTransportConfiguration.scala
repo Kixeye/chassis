@@ -20,12 +20,14 @@ package com.kixeye.chassis.scala.transport
  * #L%
  */
 
-import org.springframework.context.annotation.{ComponentScan, Bean, Configuration}
+import org.springframework.context.annotation.{Import, ComponentScan, Bean, Configuration}
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
+import com.kixeye.chassis.transport.TransportConfiguration
 
 @Configuration
+@Import(Array(classOf[TransportConfiguration]))
 @ComponentScan(basePackageClasses = Array(classOf[ScalaTransportConfiguration]))
 class ScalaTransportConfiguration {
   @Bean
