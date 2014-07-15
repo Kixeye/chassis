@@ -27,6 +27,7 @@ import com.mangofactory.swagger.configuration.SpringSwaggerConfig;
 import com.mangofactory.swagger.models.DefaultModelPropertiesProvider;
 import com.mangofactory.swagger.models.DefaultModelProvider;
 import com.mangofactory.swagger.models.ModelDependencyProvider;
+import com.mangofactory.swagger.models.ModelProvider;
 import com.mangofactory.swagger.models.alternates.AlternateTypeProvider;
 import com.mangofactory.swagger.models.alternates.AlternateTypeRule;
 import com.mangofactory.swagger.plugin.EnableSwagger;
@@ -66,12 +67,10 @@ public class SwaggerConfiguration {
     @Autowired
     private AlternateTypeProvider alternateTypeProvider;
 
-    @Autowired
-    private ModelDependencyProvider modelDependencyProvider;
-
     @Bean
     public SwaggerSpringMvcPlugin swaggerSpringMvcPlugin() {
         CustomModelPropertiesProvider propertiesProvider = new CustomModelPropertiesProvider(defaultModelPropertiesProvider, alternateTypeProvider, new CustomAccessorsProvider(typeResolver));
+        ModelDependencyProvider modelDependencyProvider = new ModelDependencyProvider(typeResolver, alternateTypeProvider, propertiesProvider);
 
         DefaultModelProvider modelProvider = new DefaultModelProvider(typeResolver, alternateTypeProvider, propertiesProvider, modelDependencyProvider);
 

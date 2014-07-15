@@ -54,7 +54,7 @@ public class ConstructorParameterModelProperty implements ModelProperty {
      */
     public static ImmutableList<ConstructorParameterModelProperty> getModelProperties(ResolvedConstructor resolvedConstructor, AlternateTypeProvider alternateTypeProvider){
         Builder<ConstructorParameterModelProperty> listBuilder = new Builder<>();
-        if(resolvedConstructor.getRawMember().getAnnotation(JsonCreator.class) != null || resolvedConstructor.getDeclaringType().isInstanceOf(scala.Product.class)){
+        if(resolvedConstructor.getRawMember().getAnnotation(JsonCreator.class) != null || scala.Product.class.isAssignableFrom(resolvedConstructor.getDeclaringType().getErasedType())){
             //constructor for normal classes must be annotated with @JsonCreator. Scala Case Classes are a special case
             for(int i=0;i<resolvedConstructor.getArgumentCount();i++){
                 AnnotationMap annotationMap = annotationMap(resolvedConstructor.getRawMember().getParameterAnnotations()[i]);
