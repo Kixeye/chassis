@@ -20,6 +20,8 @@ package com.kixeye.chassis.support;
  * #L%
  */
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.OperatingSystemMXBean;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -39,6 +41,7 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 
+import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheck;
 import com.codahale.metrics.health.HealthCheckRegistry;
@@ -103,6 +106,18 @@ public class ChassisConfiguration implements ApplicationListener<ApplicationEven
 		bean.register("jvm.memory", new MemoryUsageGaugeSet());
 		bean.register("jvm.thread-states", new ThreadStatesGaugeSet());
 		bean.register("jvm.fd", new FileDescriptorRatioGauge());
+		bean.register("jvm.load-average", new Gauge<Double>() {
+			private OperatingSystemMXBean mxBean = ManagementFactory.getOperatingSystemMXBean();
+			
+			public Double getValue() {
+				try {
+					return mxBean.getSystemLoadAverage();
+				} catch (Exception e) {
+					// not supported
+					return -1d;
+				}
+			}
+		});
 
 		// add Logback metrics
 		final LoggerContext factory = (LoggerContext) LoggerFactory.getILoggerFactory();
