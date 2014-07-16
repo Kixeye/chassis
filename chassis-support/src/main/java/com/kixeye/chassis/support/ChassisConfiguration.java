@@ -83,7 +83,7 @@ public class ChassisConfiguration implements ApplicationListener<ApplicationEven
 
     @Override
 	public void onApplicationEvent(ApplicationEvent event) {
-        //we only want to tell Eureka that the application up
+        //we only want to tell Eureka that the application is up
         //when the root application context (thisApplicationContext) has
         //been fully started.  we want to ignore any ContextRefreshedEvent
         //from child application contexts.
