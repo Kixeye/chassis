@@ -121,7 +121,7 @@ public class MetadataCollector {
     public Map<String, String> getMetadataMap() {
         Map<String, String> dynamic = getDynamicMetadataMap();
         if (dynamic == null) {
-            return staticMetaDataCache;
+            return getStaticMetadataMap();
         }
         LinkedHashMap<String, String> metadata = new LinkedHashMap<>(getStaticMetadataMap());
         metadata.putAll(dynamic);
