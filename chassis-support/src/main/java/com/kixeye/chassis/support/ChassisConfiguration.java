@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
@@ -76,9 +77,19 @@ public class ChassisConfiguration implements ApplicationListener<ApplicationEven
 
 	@Value("${eureka.datacenter}")
 	private String datacenter;
-	
+
+    @Autowired
+    private ApplicationContext thisApplicationContext;
+
     @Override
 	public void onApplicationEvent(ApplicationEvent event) {
+        //we only want to tell Eureka that the application up
+        //when the root application context (thisApplicationContext) has
+        //been fully started.  we want to ignore any ContextRefreshedEvent
+        //from child application contexts.
+        if(!event.getSource().equals(thisApplicationContext)){
+            return;
+        }
 		if (event instanceof ContextRefreshedEvent) {
             if (!disableEureka) {
                 // tell Eureka the server UP which in turn starts the health checks and heartbeat
