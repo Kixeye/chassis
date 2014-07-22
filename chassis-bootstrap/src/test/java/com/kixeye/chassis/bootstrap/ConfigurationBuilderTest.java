@@ -27,6 +27,11 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+import com.kixeye.chassis.bootstrap.BootstrapException.ApplicationConfigurationNotFoundException;
+import com.kixeye.chassis.bootstrap.aws.ServerInstanceContext;
+import com.kixeye.chassis.bootstrap.configuration.BootstrapConfigKeys;
+import com.kixeye.chassis.bootstrap.configuration.ConfigurationBuilder;
+import com.kixeye.chassis.bootstrap.configuration.zookeeper.ZookeeperConfigurationProvider;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.curator.framework.CuratorFramework;
@@ -42,9 +47,7 @@ import org.springframework.context.annotation.PropertySource;
 
 import com.amazonaws.regions.Regions;
 import com.kixeye.chassis.bootstrap.BootstrapException.ConflictingModuleConfigurationKeysException;
-import com.kixeye.chassis.bootstrap.BootstrapException.MissingApplicationConfigurationInZookeeperException;
 import com.kixeye.chassis.bootstrap.BootstrapException.ResourceLoadingException;
-import com.kixeye.chassis.bootstrap.aws.AwsInstanceContext;
 import com.netflix.config.DynamicPropertyFactory;
 
 /**
@@ -95,7 +98,7 @@ public class ConfigurationBuilderTest {
     public void setup() throws Exception {
     	initializeZookeeper();
     	
-        configurationBuilder = new ConfigurationBuilder(APP_NAME, ENVIRONMENT, true);
+        configurationBuilder = new ConfigurationBuilder(APP_NAME, ENVIRONMENT, true, BootstrapConfiguration.REFLECTIONS);
         configurationBuilder.withAppVersion(APP_VERSION);
 
         TestUtils.resetArchaius();
@@ -135,16 +138,16 @@ public class ConfigurationBuilderTest {
         String instanceId = RandomStringUtils.randomAlphabetic(10);
         String region = Regions.DEFAULT_REGION.getName();
 
-        AwsInstanceContext awsInstanceContext = EasyMock.createMock(AwsInstanceContext.class);
-        EasyMock.expect(awsInstanceContext.getAvailabilityZone()).andReturn(az);
-        EasyMock.expect(awsInstanceContext.getInstanceId()).andReturn(instanceId);
-        EasyMock.expect(awsInstanceContext.getRegion()).andReturn(region);
-        EasyMock.expect(awsInstanceContext.getPrivateIp()).andReturn("127.0.0.1");
-        EasyMock.expect(awsInstanceContext.getPublicIp()).andReturn(null);
+        ServerInstanceContext serverInstanceContext = EasyMock.createMock(ServerInstanceContext.class);
+        EasyMock.expect(serverInstanceContext.getAvailabilityZone()).andReturn(az);
+        EasyMock.expect(serverInstanceContext.getInstanceId()).andReturn(instanceId);
+        EasyMock.expect(serverInstanceContext.getRegion()).andReturn(region);
+        EasyMock.expect(serverInstanceContext.getPrivateIp()).andReturn("127.0.0.1");
+        EasyMock.expect(serverInstanceContext.getPublicIp()).andReturn(null);
 
-        EasyMock.replay(awsInstanceContext);
+        EasyMock.replay(serverInstanceContext);
 
-        Configuration configuration = configurationBuilder.withAwsInstanceContext(awsInstanceContext).build();
+        Configuration configuration = configurationBuilder.withServerInstanceContext(serverInstanceContext).build();
 
         Assert.assertEquals(az, configuration.getString(BootstrapConfigKeys.AWS_INSTANCE_AVAILABILITY_ZONE.getPropertyName()));
         Assert.assertEquals(instanceId, configuration.getString(BootstrapConfigKeys.AWS_INSTANCE_ID.getPropertyName()));
@@ -152,7 +155,7 @@ public class ConfigurationBuilderTest {
         Assert.assertEquals("127.0.0.1", configuration.getString(BootstrapConfigKeys.AWS_INSTANCE_PRIVATE_IP.getPropertyName()));
         Assert.assertEquals(null, configuration.getString(BootstrapConfigKeys.AWS_INSTANCE_PUBLIC_IP.getPropertyName()));
 
-        EasyMock.verify(awsInstanceContext);
+        EasyMock.verify(serverInstanceContext);
     }
 
     @Test
@@ -226,11 +229,11 @@ public class ConfigurationBuilderTest {
     @SuppressWarnings({ "unchecked", "rawtypes" })
 	@Test
     public void missingZookeeperConfig_writeDefaults() throws Exception {
-        TestUtils.writePropertiesToFile(TEST_APP_CONFIG_PROPERTIES, filesCreated, new SimpleEntry(BootstrapConfigKeys.PUBLISH_DEFAULTS_TO_ZOOKEEPER_KEY.getPropertyName(), "true"));
+        TestUtils.writePropertiesToFile(TEST_APP_CONFIG_PROPERTIES, filesCreated, new SimpleEntry(BootstrapConfigKeys.PUBLISH_DEFAULTS_KEY.getPropertyName(), "true"));
         TestUtils.deleteAll(curatorFramework);
 
         Assert.assertNull(curatorFramework.checkExists().forPath(ZOOKEEPER_CONFIG_ROOT));
-        configurationBuilder.withZookeeper(zookeeperServer.getConnectString());
+        configurationBuilder.withConfigurationProvider(new ZookeeperConfigurationProvider(zookeeperServer.getConnectString()));
         configurationBuilder.withApplicationProperties("file://" + TEST_APP_CONFIG_PROPERTIES);
         configurationBuilder.build();
 
@@ -245,12 +248,13 @@ public class ConfigurationBuilderTest {
     @SuppressWarnings({ "unchecked", "rawtypes" })
 	@Test
     public void missingZookeeperConfig_writeDefaultsEnvironmentFileOverride() throws Exception {
-        TestUtils.writePropertiesToFile(TEST_APP_CONFIG_PROPERTIES, filesCreated, new SimpleEntry(BootstrapConfigKeys.PUBLISH_DEFAULTS_TO_ZOOKEEPER_KEY.getPropertyName(), "false"));
-        TestUtils.writePropertiesToFile(TEST_APP_CONFIG_PROPERTIES.replace(".properties", "." + ENVIRONMENT + ".properties"), filesCreated, new SimpleEntry(BootstrapConfigKeys.PUBLISH_DEFAULTS_TO_ZOOKEEPER_KEY.getPropertyName(), "true"));
+        TestUtils.writePropertiesToFile(TEST_APP_CONFIG_PROPERTIES, filesCreated, new SimpleEntry(BootstrapConfigKeys.PUBLISH_DEFAULTS_KEY.getPropertyName(), "false"));
+        TestUtils.writePropertiesToFile(TEST_APP_CONFIG_PROPERTIES.replace(".properties", "." + ENVIRONMENT + ".properties"), filesCreated, new SimpleEntry(BootstrapConfigKeys.PUBLISH_DEFAULTS_KEY.getPropertyName(), "true"));
         TestUtils.deleteAll(curatorFramework);
 
         Assert.assertNull(curatorFramework.checkExists().forPath(ZOOKEEPER_CONFIG_ROOT));
-        configurationBuilder.withZookeeper(zookeeperServer.getConnectString());
+
+        configurationBuilder.withConfigurationProvider(new ZookeeperConfigurationProvider(zookeeperServer.getConnectString()));
         configurationBuilder.withApplicationProperties("file://" + TEST_APP_CONFIG_PROPERTIES);
         configurationBuilder.build();
 
@@ -264,23 +268,23 @@ public class ConfigurationBuilderTest {
 
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-	@Test(expected = MissingApplicationConfigurationInZookeeperException.class)
+	@Test(expected = ApplicationConfigurationNotFoundException.class)
     public void missingZookeeperConfig_writeDefaultsDisabledInConfig() throws Exception {
-        TestUtils.writePropertiesToFile(TEST_APP_CONFIG_PROPERTIES, filesCreated, new SimpleEntry(BootstrapConfigKeys.PUBLISH_DEFAULTS_TO_ZOOKEEPER_KEY.getPropertyName(), "false"));
+        TestUtils.writePropertiesToFile(TEST_APP_CONFIG_PROPERTIES, filesCreated, new SimpleEntry(BootstrapConfigKeys.PUBLISH_DEFAULTS_KEY.getPropertyName(), "false"));
         TestUtils.deleteAll(curatorFramework);
 
         Assert.assertNull(curatorFramework.checkExists().forPath(ZOOKEEPER_CONFIG_ROOT));
-        configurationBuilder.withZookeeper(zookeeperServer.getConnectString());
+        configurationBuilder.withConfigurationProvider(new ZookeeperConfigurationProvider(zookeeperServer.getConnectString()));
         configurationBuilder.withApplicationProperties("file://" + TEST_APP_CONFIG_PROPERTIES);
         configurationBuilder.build();
     }
 
-    @Test(expected = MissingApplicationConfigurationInZookeeperException.class)
+    @Test(expected = ApplicationConfigurationNotFoundException.class)
     public void missingZookeeperConfig() throws Exception {
         TestUtils.deleteAll(curatorFramework);
 
         Assert.assertNull(curatorFramework.checkExists().forPath(ZOOKEEPER_CONFIG_ROOT));
-        configurationBuilder.withZookeeper(zookeeperServer.getConnectString());
+        configurationBuilder.withConfigurationProvider(new ZookeeperConfigurationProvider(zookeeperServer.getConnectString()));
         configurationBuilder.build();
     }
 
@@ -290,7 +294,7 @@ public class ConfigurationBuilderTest {
         curatorFramework.create().creatingParentsIfNeeded().forPath(key, MODULE_1_VALUE_1.getBytes());
         Assert.assertEquals(MODULE_1_VALUE_1, new String(curatorFramework.getData().forPath(key)));
 
-        configurationBuilder.withZookeeper(zookeeperServer.getConnectString());
+        configurationBuilder.withConfigurationProvider(new ZookeeperConfigurationProvider(zookeeperServer.getConnectString()));
         Configuration configuration = configurationBuilder.build();
 
         Assert.assertEquals(MODULE_1_VALUE_1, configuration.getString(MODULE_1_KEY_1));
@@ -309,7 +313,7 @@ public class ConfigurationBuilderTest {
 
         curatorFramework.create().creatingParentsIfNeeded().forPath(ZOOKEEPER_CONFIG_ROOT + "/" + key1, "zookeepervalue".getBytes());
 
-        configurationBuilder.withZookeeper(zookeeperServer.getConnectString());
+        configurationBuilder.withConfigurationProvider(new ZookeeperConfigurationProvider(zookeeperServer.getConnectString()));
         configurationBuilder.withApplicationProperties(TEST_APP_CONFIG_PROPERTIES_SPRING_PATH);
         Configuration configuration = configurationBuilder.build();
 

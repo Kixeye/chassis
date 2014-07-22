@@ -61,8 +61,8 @@ public class BootstrapException extends RuntimeException {
         throw new ZookeeperInitializationException(zookeeperHost, exhibitors, e);
     }
 
-    public static void configurationMissingFromZookeeper(String zookeeperHost, String path, Exception e) {
-        throw new MissingApplicationConfigurationInZookeeperException(zookeeperHost, path, e);
+    public static void configurationNotFound(String message, Exception e) {
+        throw new ApplicationConfigurationNotFoundException(message, e);
     }
 
     public static void moduleKeysConflictFound(String propertyFile, String[] propertyFiles) {
@@ -108,11 +108,9 @@ public class BootstrapException extends RuntimeException {
         }
     }
 
-    public static class MissingApplicationConfigurationInZookeeperException extends BootstrapException {
-        public MissingApplicationConfigurationInZookeeperException(String zookeeperHost, String path, Exception e) {
-            super("Unable to verify Zookeeper configuration path " + path +
-                    ". Zookeeper configuration path format is /{environment}/{app name}/{app version}. Please verify that you zookeeper (" +
-                    zookeeperHost + ") has that path.", e);
+    public static class ApplicationConfigurationNotFoundException extends BootstrapException {
+        public ApplicationConfigurationNotFoundException(String message, Exception e) {
+            super(message, e);
         }
     }
 

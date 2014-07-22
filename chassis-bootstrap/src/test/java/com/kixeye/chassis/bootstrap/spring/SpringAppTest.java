@@ -20,12 +20,14 @@ package com.kixeye.chassis.bootstrap.spring;
  * #L%
  */
 
-import static com.kixeye.chassis.bootstrap.BootstrapConfigKeys.APP_VERSION_KEY;
+import static com.kixeye.chassis.bootstrap.configuration.BootstrapConfigKeys.APP_VERSION_KEY;
 
 import java.lang.reflect.Field;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Map;
 
+import com.kixeye.chassis.bootstrap.AppMain.Arguments;
+import com.kixeye.chassis.bootstrap.Application;
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.curator.framework.CuratorFramework;
@@ -42,7 +44,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.kixeye.chassis.bootstrap.AppMain;
-import com.kixeye.chassis.bootstrap.DynamicZookeeperConfigurationSource;
+import com.kixeye.chassis.bootstrap.configuration.zookeeper.DynamicZookeeperConfigurationSource;
 import com.kixeye.chassis.bootstrap.SpringConfiguration;
 import com.kixeye.chassis.bootstrap.TestUtils;
 import com.netflix.config.ConcurrentCompositeConfiguration;
@@ -73,13 +75,13 @@ public class SpringAppTest {
     @Autowired
     private CuratorFramework curator;
 
+    private Application application;
+
     @Before
     public void before() throws Exception {
-        AppMain.application = null;
         System.setProperty(APP_VERSION_KEY.getPropertyName(), VERSION);
         
         TestUtils.resetArchaius();
-        TestSpringApp.reset();
         environment = RandomStringUtils.randomAlphabetic(10);
     }
     
@@ -114,9 +116,10 @@ public class SpringAppTest {
     			}
     		}
     	}
-    	
-    	SpringApplicationContainer appContainer = (SpringApplicationContainer) AppMain.application.getApplicationContainer();
-    	appContainer.getApplicationContext().close();
+
+        if(application != null){
+            application.stop();
+        }
     }
 
     /*
@@ -129,37 +132,22 @@ public class SpringAppTest {
 	@Test(timeout = 40000)
     public void runSpringWithZookeeperConfig() throws Exception {
         String value = RandomStringUtils.randomAlphanumeric(5);
-        final String[] args = new String[]{"-e", environment, "-a", TestSpringApp.class.getName(), "-s", "-z", zookeeper.getConnectString()};
-
         TestUtils.addAppProperties(UNIT_TEST_SPRING_APP, environment, VERSION, curator, new SimpleEntry<String, String>(KEY, value));
 
-        //run the spring-based server in a seperate thread so it doesn't block the unit test's thread
-        runAppAsServer(args);
+        Arguments arguments = new Arguments();
+        arguments.environment = environment;
+        arguments.appClass = TestSpringApp.class.getName();
+        arguments.zookeeper = zookeeper.getConnectString();
+        arguments.skipModuleScanning = true;
 
-        //need to wait till spring is fully started.
-        TestUtils.blockUntilAppStarts();
+        application = new Application(arguments).start();
 
         //grab the TestComponent that has been component-scanned into the app's spring context.
-        Map<String,TestComponent> beans = TestUtils.getSpringContextFromApp().getBeansOfType(TestComponent.class);
+        Map<String,TestComponent> beans = application.getChildApplicationContext().getBeansOfType(TestComponent.class);
         TestComponent testComponent = beans.values().iterator().next();
 
         //assert that the TestComponent has been injected with a property value from zookeeper.
         Assert.assertEquals(value, testComponent.getTestProperty());
-    }
-
-    private Thread runAppAsServer(final String[] args) {
-        Thread serverThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    AppMain.main(args);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        });
-        serverThread.start();
-        return serverThread;
     }
 
 }

@@ -1,4 +1,4 @@
-package com.kixeye.chassis.bootstrap.aws;
+package com.kixeye.chassis.bootstrap.configuration;
 
 /*
  * #%L
@@ -20,20 +20,25 @@ package com.kixeye.chassis.bootstrap.aws;
  * #L%
  */
 
+import org.apache.commons.configuration.Configuration;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.TreeMap;
+
 /**
- * Metadata client for AWS EC2
+ * Utils for working with Configurations
  *
  * @author dturner@kixeye.com
  */
-public interface Ec2MetadataClient {
+public class Configurations {
 
-    String getAvailabilityZone();
-
-    String getInstanceId();
-
-    String getUserData();
-
-    String getPrivateIpAddress();
-
-    String getPublicIpAddress();
+    public static Map<String, ?> asMap(Configuration configuration){
+        Map<String, Object> config = new TreeMap<>();
+        Iterator<String> keys = configuration.getKeys();
+        while (keys.hasNext()) {
+            String key = keys.next();
+            config.put(key, configuration.getProperty(key));
+        }
+        return config;
+    }
 }

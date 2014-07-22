@@ -20,7 +20,6 @@ package com.kixeye.chassis.bootstrap.springweb;
  * #L%
  */
 
-import com.kixeye.chassis.bootstrap.annotation.Init;
 import com.kixeye.chassis.bootstrap.annotation.SpringApp;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
@@ -36,6 +35,7 @@ import org.springframework.util.SocketUtils;
 import org.springframework.web.context.ConfigurableWebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.config.annotation.DelegatingWebMvcConfiguration;
+import javax.annotation.PostConstruct;
 import java.net.InetSocketAddress;
 
 /**
@@ -50,13 +50,9 @@ public class TestSpringWebApp extends DelegatingWebMvcConfiguration {
 
     public static boolean onInit = false;
 
-    @Init
-    public static void onInit(org.apache.commons.configuration.Configuration configuration) {
+    @PostConstruct
+    public void init() {
         onInit = true;
-    }
-
-    public static void reset() {
-        onInit = false;
     }
 
     @Bean(initMethod = "start", destroyMethod = "stop", name = "httpServer")

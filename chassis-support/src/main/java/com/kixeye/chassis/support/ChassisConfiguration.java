@@ -60,12 +60,13 @@ import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.HealthCheckCallback;
 import com.netflix.appinfo.InstanceInfo.InstanceStatus;
 import com.netflix.discovery.DiscoveryManager;
+import org.springframework.stereotype.Component;
 
 /**
  * The main Spring configuration class for the Chassis.
  */
 @Configuration
-@EnableAspectJAutoProxy
+@Component
 @PropertySource("classpath:/chassis-default.properties")
 @Import({
     EurekaConfiguration.class, LoggingConfiguration.class,

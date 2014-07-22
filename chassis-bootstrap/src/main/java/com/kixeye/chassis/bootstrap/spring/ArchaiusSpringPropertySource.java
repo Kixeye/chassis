@@ -30,7 +30,7 @@ import com.netflix.config.ConfigurationManager;
 import com.netflix.config.DynamicPropertyFactory;
 
 /**
- * A spring property source that uses archaius.
+ * A spring property source that uses Archaius.
  * 
  * @author ebahtijaragic
  */

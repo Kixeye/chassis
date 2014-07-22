@@ -40,7 +40,7 @@ public class TestController {
 
     @RequestMapping(value = "/getZookeeperProperty", method = RequestMethod.GET, produces = MediaType.TEXT_PLAIN_VALUE)
     @ResponseBody
-    public String ping() {
+    public String getZookeeperProperty() {
         return property;
     }
 }

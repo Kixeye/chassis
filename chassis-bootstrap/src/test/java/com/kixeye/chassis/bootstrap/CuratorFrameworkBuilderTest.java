@@ -23,6 +23,8 @@ package com.kixeye.chassis.bootstrap;
 import java.io.IOException;
 import java.util.HashMap;
 
+import com.kixeye.chassis.bootstrap.configuration.BootstrapConfigKeys;
+import com.kixeye.chassis.bootstrap.configuration.zookeeper.CuratorFrameworkBuilder;
 import org.apache.commons.configuration.MapConfiguration;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.imps.CuratorFrameworkState;

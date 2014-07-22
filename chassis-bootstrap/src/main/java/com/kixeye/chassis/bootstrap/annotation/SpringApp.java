@@ -29,10 +29,11 @@ import java.lang.annotation.Target;
  * Used to configure an application.
  *
  * @author dturner@kixeye.com
+ * @see {@link App}
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-@App
+@Deprecated
 public @interface SpringApp {
     /**
      * The name of the clientApplication

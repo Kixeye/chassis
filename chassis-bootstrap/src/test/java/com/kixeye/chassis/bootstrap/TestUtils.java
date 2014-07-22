@@ -20,15 +20,11 @@ package com.kixeye.chassis.bootstrap;
  * #L%
  */
 
-import com.kixeye.chassis.bootstrap.spring.AbstractSpringApplicationContainer;
 import com.netflix.config.ConfigurationManager;
 import com.netflix.config.DynamicPropertyFactory;
-
 import org.apache.commons.lang.reflect.FieldUtils;
 import org.apache.curator.framework.CuratorFramework;
-import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.util.SystemPropertyUtils;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -46,25 +42,6 @@ import java.util.Set;
  * @author dturner@kixeye.com
  */
 public class TestUtils {
-//    private static Logger logger = LoggerFactory.getLogger(TestUtils.class);
-
-    public static Thread stopAppAfterLaunch() {
-        Thread watcher = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (AppMain.application == null || !AppMain.application.isRunning()) {
-                    try {
-                        Thread.sleep(300);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-                AppMain.application.stop();
-            }
-        });
-        watcher.start();
-        return watcher;
-    }
 
     public static OutputStream createFile(String path) {
         try {
@@ -74,7 +51,7 @@ public class TestUtils {
             }
             File file = new File(path);
             if (!file.getParentFile().exists()) {
-                if(!file.getParentFile().mkdirs()){
+                if (!file.getParentFile().mkdirs()) {
                     throw new RuntimeException("Unable to create parent file(s) " + file.getParent());
                 }
             }
@@ -173,33 +150,4 @@ public class TestUtils {
         }
     }
 
-    @SuppressWarnings("unchecked")
-	public static <T> T getCustomAppInstance() {
-        return (T) ((CustomApplicationContainer) AppMain.application.getApplicationContainer()).getCustomApplicationInstance();
-    }
-
-    public static AbstractApplicationContext getSpringContextFromApp() {
-        return ((AbstractSpringApplicationContainer<?>) AppMain.application.getApplicationContainer()).getApplicationContext();
-    }
-
-    public static void blockUntilAppStarts() throws InterruptedException {
-        while (AppMain.application == null || !AppMain.application.isRunning()) {
-            Thread.sleep(200);
-        }
-    }
-
-    public static Thread runAppAsServer(final String[] args) {
-        Thread serverThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    AppMain.main(args);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        });
-        serverThread.start();
-        return serverThread;
-    }
 }

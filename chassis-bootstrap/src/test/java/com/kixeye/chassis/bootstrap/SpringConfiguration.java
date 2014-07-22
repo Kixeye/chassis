@@ -50,14 +50,13 @@ public class SpringConfiguration {
 
     @Bean(initMethod="start", destroyMethod="close")
     public CuratorFramework curator(TestingServer zookeeper) throws Exception{
-        CuratorFramework curator = CuratorFrameworkFactory.newClient(
+        return CuratorFrameworkFactory.newClient(
                 zookeeper.getConnectString(),
                 5000,
                 5000,
                 new RetryPolicy() {
 					public boolean allowRetry(int retryCount, long elapsedTimeMs, RetrySleeper sleeper) { return false; }
 				});
-        return curator;
     }
 
 }

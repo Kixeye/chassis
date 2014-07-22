@@ -20,33 +20,29 @@ package com.kixeye.chassis.bootstrap.spring;
  * #L%
  */
 
-import com.kixeye.chassis.bootstrap.annotation.SpringApp;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
+import com.google.common.collect.Iterators;
+import com.kixeye.chassis.bootstrap.AppMain.Arguments;
+import org.springframework.core.env.EnumerablePropertySource;
 
 /**
- * Spring app
+ * Exposes {@link Arguments} as a source of properties to Spring
  *
  * @author dturner@kixeye.com
  */
-@SpringApp(name = SpringAppTest.UNIT_TEST_SPRING_APP, configurationClasses = TestSpringApp.class, webapp = false)
-@Configuration
-@ComponentScan(basePackageClasses = TestSpringApp.class)
-public class TestSpringApp {
+public class ArgumentsPropertySource extends EnumerablePropertySource<Arguments> {
 
-    public boolean onInit = false;
-    public boolean onDestroy = false;
-
-    @PostConstruct
-    public void onInit() {
-        onInit = true;
+    public ArgumentsPropertySource(String name, Arguments arguments) {
+        super(name, arguments);
     }
 
-    @PreDestroy
-    public void onDestroy() {
-        onDestroy = true;
+    @Override
+    public Object getProperty(String name) {
+        return source.asPropertyMap().get(name);
+    }
+
+    @Override
+    public String[] getPropertyNames() {
+        return Iterators.toArray(source.asPropertyMap().keySet().iterator(), String.class);
     }
 
 }

@@ -1,4 +1,4 @@
-package com.kixeye.chassis.bootstrap.aws;
+package com.kixeye.chassis.bootstrap.configuration;
 
 /*
  * #%L
@@ -20,20 +20,25 @@ package com.kixeye.chassis.bootstrap.aws;
  * #L%
  */
 
+import com.kixeye.chassis.bootstrap.configuration.ConfigurationWriter.Filter;
+
 /**
- * Metadata client for AWS EC2
+ * Filters out system properties and internal bootstrap defined properties.
  *
  * @author dturner@kixeye.com
  */
-public interface Ec2MetadataClient {
+public class DefaultPropertyFilter implements Filter {
 
-    String getAvailabilityZone();
-
-    String getInstanceId();
-
-    String getUserData();
-
-    String getPrivateIpAddress();
-
-    String getPublicIpAddress();
+    @Override
+    public boolean excludeProperty(String key, Object value) {
+        //exclude system props
+        if (System.getProperty(key) != null) {
+            return true;
+        }
+        //exclude internal bootstrap keys
+        if (BootstrapConfigKeys.fromPropertyName(key) != null) {
+            return true;
+        }
+        return false;
+    }
 }

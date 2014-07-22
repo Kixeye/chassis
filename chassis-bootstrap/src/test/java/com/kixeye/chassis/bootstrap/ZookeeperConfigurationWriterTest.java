@@ -23,6 +23,8 @@ package com.kixeye.chassis.bootstrap;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.kixeye.chassis.bootstrap.configuration.DefaultPropertyFilter;
+import com.kixeye.chassis.bootstrap.configuration.zookeeper.ZookeeperConfigurationWriter;
 import org.apache.commons.configuration.MapConfiguration;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.math.RandomUtils;

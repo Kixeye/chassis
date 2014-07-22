@@ -20,21 +20,22 @@ package com.kixeye.chassis.bootstrap;
  * #L%
  */
 
+import ch.qos.logback.classic.BasicConfigurator;
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.LoggerContext;
+import com.google.common.collect.Iterators;
+import com.kixeye.chassis.bootstrap.annotation.SpringApp;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.spi.StringArrayOptionHandler;
-import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import ch.qos.logback.classic.BasicConfigurator;
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.LoggerContext;
-
-import com.kixeye.chassis.bootstrap.Process.Type;
-import com.kixeye.chassis.bootstrap.aws.AwsInstanceContext;
+import org.springframework.core.env.EnumerablePropertySource;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Main bootstrapping class for Spring applications using this bootstrap library.
@@ -43,43 +44,45 @@ import com.kixeye.chassis.bootstrap.aws.AwsInstanceContext;
  * @author dturner@kixeye.com
  */
 public final class AppMain {
-    public static ApplicationContainerFactory applicationContainerFactory = new ApplicationContainerFactory();
-    public static ApplicationFactory applicationFactory = new ApplicationFactory(applicationContainerFactory);
-    public static ProcessFactory processFactory = new ProcessFactory();
     public static Application application;
-    private static Arguments arguments;
-    private static boolean loggingConfigured = false;
-
-    public static final Reflections reflections = new Reflections("", "com.kixeye");
 
     /**
      * Main entry method.
      *
-     * @param args clientApplication args
+     * @param args the application arguments
      */
     public static void main(String[] args) throws Exception {
-        initializeLogging();
 
-        AwsInstanceContext awsInstanceContext = AwsInstanceContext.initialize();
+        System.out.println("Starting application with arguments " + Arrays.toString(args));
 
-        loadArguments(args, awsInstanceContext);
+        Arguments arguments = loadArguments(args);
 
-        if (AppMain.arguments == null) {
+        if (arguments == null) {
             return;
         }
 
-        resetLoggingIfNecessary();
+        initializeLogging(arguments);
 
-        AppMain.application = applicationFactory.getApplication(arguments, awsInstanceContext);
-        try {
-            processFactory.getProcess(AppMain.application, arguments).run();
-        } catch (Exception e) {
-            e.printStackTrace();
+        application = new Application(arguments).start();
+
+        registerShutdownHook();
+
+        while (application.isRunning()) {
+            //keep the main thread alive
+            Thread.sleep(500);
         }
-        System.out.print(AppMain.application.getName() + " stopped.");
     }
 
-    private static void initializeLogging() {
+    private static void registerShutdownHook() {
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            @Override
+            public void run() {
+                application.stop();
+            }
+        }));
+    }
+
+    private static void initializeLogging(Arguments arguments) {
         //bootstrap depends on logback for logging console output. if the clientApplication does not want logback, they
         //need to exclude logback from their project dependencies and initialize their own logging
         try {
@@ -93,28 +96,14 @@ public final class AppMain {
         context.reset();
         BasicConfigurator.configure(context);
         ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-        logger.setLevel(Level.INFO);
 
-        logger.info("Initialized logging at INFO level");
+        Level level = Level.valueOf(arguments.logLevel.name().toUpperCase());
+        logger.setLevel(level);
 
-        loggingConfigured = true;
+        logger.info("Initialized logging at {} level", level);
     }
 
-    private static void resetLoggingIfNecessary() {
-        if (!loggingConfigured) {
-            return;
-        }
-
-        ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-
-        if (logger.getLevel() == Level.valueOf(arguments.logLevel.name().toUpperCase())) {
-            return;
-        }
-
-        logger.setLevel(Level.valueOf(arguments.logLevel.name().toUpperCase()));
-    }
-
-    private static void loadArguments(String[] args, AwsInstanceContext awsInstanceContext) {
+    private static Arguments loadArguments(String[] args) {
         Arguments arguments = new Arguments();
         CmdLineParser parser = new CmdLineParser(arguments);
         parser.setUsageWidth(150);
@@ -124,36 +113,14 @@ public final class AppMain {
             System.err.println(e.getMessage());
             System.err.println();
             parser.printUsage(System.err);
-            return;
+            return null;
         }
         if (arguments.help) {
             parser.printUsage(System.err);
-            return;
-        }
-        if (arguments.getProcessType() == Type.SERVER && StringUtils.isBlank(arguments.environment)) {
-            if (awsInstanceContext == null) {
-                System.err.println("Environment is required.");
-                System.err.println();
-                parser.printUsage(System.err);
-                return;
-            }
-            arguments.environment = awsInstanceContext.getEnvironment();
-        }
-        if (arguments.getExhibitorHosts() == null && arguments.getZookeeperHost() == null) {
-            // No exhibitor or zookeeper specified, try to get exhibitor from AWS instance context
-            if (awsInstanceContext != null) {
-                arguments.exhibitorHosts = new String[]{awsInstanceContext.getExhibitorHost()};
-                arguments.exhibitorPort = awsInstanceContext.getExhibitorPort();
-            }
+            return null;
         }
 
-        // shove startup parameters into properties for easy viewing
-        System.setProperty("debug.arguments.environment", (arguments.environment == null) ? "null" : arguments.environment);
-        System.setProperty("debug.arguments.zookeeper", (arguments.zookeeper == null) ? "null" : arguments.zookeeper );
-        System.setProperty("debug.arguments.exhibitorHosts", (arguments.exhibitorHosts == null) ? "null" : StringUtils.join(arguments.exhibitorHosts,","));
-        System.setProperty("debug.arguments.exhibitorPort", "" + arguments.exhibitorPort);
-
-        AppMain.arguments = arguments;
+        return arguments;
     }
 
     private static enum LogLevel {
@@ -161,6 +128,8 @@ public final class AppMain {
     }
 
     public static class Arguments {
+        private Map<String, Object> map;
+
         @Option(required = false, name = "--environment", aliases = "-e", usage = "The environment to run in. If using Zookeeper (-z), a Zookerkeeper configuration should exist for the given value. This argument is required if not running the admin shell.")
         public String environment;
 
@@ -179,30 +148,11 @@ public final class AppMain {
         @Option(required = false, name = "--help", aliases = "-h", usage = "Display usage information")
         public boolean help;
 
-        @Option(required = false, name = "--extract-config", aliases = "-c", usage = "Whether to extract the known configs", depends = {"-e"})
-        public boolean extractConfigs;
-
-        @Option(required = false, name = "--force-extract-config", aliases = "-cf", usage = "Whether to extract the known configs", depends = {"-c", "-e"})
-        public boolean forceExtractConfigs;
-
-        @Option(required = false, name = "--extract-config-file", aliases = "-f", usage = "Extracts the known configs for this app to this file.", depends = {"-c", "-e"})
-        public String extractConfigFile;
-
-        @Option(hidden = true, required = false, name = "--processtype", aliases = "-p", usage = "The type of process to run in. Valid values are: SERVER, shell")
-        public Type processType = Type.SERVER;
-
         @Option(required = false, handler = StringArrayOptionHandler.class, name = "--exhibitors", aliases = "-x", usage = "A space separated list of IP addresses or hostnames resolving to the Exhibitor servers managing the application's Zookeeper cluster.  When used, java-bootsrap will use the provided by the given Exhibitor cluster. The option can NOT be used in conjunction with -z.")
-        String[] exhibitorHosts;
+        public String[] exhibitorHosts;
 
         @Option(required = false, name = "--exhibitors-port", aliases = "-xp", usage = "The port the Exhibitors servers are listening on. Defaults to Exhibitor's default (8080).")
-        int exhibitorPort = 8080;
-
-        public Type getProcessType() {
-            if (extractConfigs) {
-                return Type.EXTRACT_CONFIGS;
-            }
-            return processType;
-        }
+        public int exhibitorPort = 8080;
 
         public String getZookeeperHost() {
             return (zookeeper == null || StringUtils.equalsIgnoreCase(zookeeper, "disabled")) ? null : zookeeper;
@@ -211,5 +161,23 @@ public final class AppMain {
         public String[] getExhibitorHosts() {
             return (exhibitorHosts == null || StringUtils.equalsIgnoreCase(exhibitorHosts[0], "disabled")) ? null : exhibitorHosts;
         }
+
+        public Map<String, Object> asPropertyMap() {
+            if (map == null) {
+                initMap();
+            }
+            return map;
+        }
+
+        private void initMap() {
+            map = new HashMap<>();
+            map.put("appEnvironment", environment);
+            map.put("zookeeperConnectionString", getZookeeperHost());
+            map.put("appClass", appClass);
+            map.put("exhibitorPort", exhibitorPort);
+            map.put("exhibitorHosts", getExhibitorHosts());
+            map.put("scanModuleConfigurations", !skipModuleScanning);
+        }
     }
+
 }
