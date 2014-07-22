@@ -67,6 +67,7 @@ import org.springframework.stereotype.Component;
  */
 @Configuration
 @Component
+
 @PropertySource("classpath:/chassis-default.properties")
 @Import({
     EurekaConfiguration.class, LoggingConfiguration.class,
