@@ -1,4 +1,4 @@
-package com.kixeye.chassis.bootstrap.spring;
+package com.kixeye.chassis.bootstrap.webapp;
 
 /*
  * #%L
@@ -21,20 +21,26 @@ package com.kixeye.chassis.bootstrap.spring;
  */
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
- * A Spring component used to test component scanning and property
- * injection.
+ * Exposes an http endpoint used in a unit test.
  *
  * @author dturner@kixeye.com
  */
-@Component
-public class TestComponent {
-    @Value("${testkey}")
-    private String testProperty;
+@Controller
+public class TestController {
 
-    public String getTestProperty() {
-        return testProperty;
+    @Value(WebAppIntegrationTest.KEY_PLACEHOLDER)
+    private String property;
+
+    @RequestMapping(value = "/getZookeeperProperty", method = RequestMethod.GET, produces = MediaType.TEXT_PLAIN_VALUE)
+    @ResponseBody
+    public String getZookeeperProperty() {
+        return property;
     }
 }

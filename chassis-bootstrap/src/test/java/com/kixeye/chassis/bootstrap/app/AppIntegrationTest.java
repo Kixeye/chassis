@@ -1,4 +1,4 @@
-package com.kixeye.chassis.bootstrap.spring;
+package com.kixeye.chassis.bootstrap.app;
 
 /*
  * #%L
@@ -22,13 +22,11 @@ package com.kixeye.chassis.bootstrap.spring;
 
 import static com.kixeye.chassis.bootstrap.configuration.BootstrapConfigKeys.APP_VERSION_KEY;
 
-import java.lang.reflect.Field;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Map;
 
 import com.kixeye.chassis.bootstrap.AppMain.Arguments;
 import com.kixeye.chassis.bootstrap.Application;
-import org.apache.commons.configuration.AbstractConfiguration;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.test.TestingServer;
@@ -43,14 +41,8 @@ import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.kixeye.chassis.bootstrap.configuration.zookeeper.DynamicZookeeperConfigurationSource;
 import com.kixeye.chassis.bootstrap.SpringConfiguration;
 import com.kixeye.chassis.bootstrap.TestUtils;
-import com.netflix.config.ConcurrentCompositeConfiguration;
-import com.netflix.config.ConfigurationManager;
-import com.netflix.config.DynamicWatchedConfiguration;
-import com.netflix.config.WatchedConfigurationSource;
-import com.netflix.config.source.ZooKeeperConfigurationSource;
 
 /**
  * Integration tests for application's which use @BasicApp.
@@ -60,7 +52,7 @@ import com.netflix.config.source.ZooKeeperConfigurationSource;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = SpringConfiguration.class)
 @DirtiesContext(classMode=ClassMode.AFTER_EACH_TEST_METHOD)
-public class SpringAppTest {
+public class AppIntegrationTest {
     private static final String VERSION = "1.0.0";
     public static final String KEY = "testkey";
     public static final String VALUE = "testvalue";
@@ -86,36 +78,6 @@ public class SpringAppTest {
     
     @After
     public void after() throws Exception {
-    	ConcurrentCompositeConfiguration mainConfig = (ConcurrentCompositeConfiguration)ConfigurationManager.getConfigInstance();
-    	
-    	for (AbstractConfiguration config : mainConfig.getConfigurations()) {
-    		if (config instanceof DynamicWatchedConfiguration) {
-    			DynamicWatchedConfiguration dyConfig = (DynamicWatchedConfiguration)config;
-    			
-    			WatchedConfigurationSource configSource = dyConfig.getSource();
-    			
-    			if (configSource instanceof ZooKeeperConfigurationSource) {
-    				ZooKeeperConfigurationSource zkConfigSource = (ZooKeeperConfigurationSource)configSource;
-    				zkConfigSource.close();
-    				
-	    			Field field = ZooKeeperConfigurationSource.class.getDeclaredField("client");
-	    			field.setAccessible(true);
-	    			
-	    			CuratorFramework curator = (CuratorFramework) field.get(zkConfigSource);
-	    			curator.close();
-    			} else if (configSource instanceof DynamicZookeeperConfigurationSource) {
-    				DynamicZookeeperConfigurationSource zkConfigSource = (DynamicZookeeperConfigurationSource)configSource;
-    				zkConfigSource.close();
-    				
-    				Field field = DynamicZookeeperConfigurationSource.class.getDeclaredField("curatorFramework");
-	    			field.setAccessible(true);
-	    			
-	    			CuratorFramework curator = (CuratorFramework) field.get(zkConfigSource);
-	    			curator.close();
-    			}
-    		}
-    	}
-
         if(application != null){
             application.stop();
         }
@@ -135,9 +97,10 @@ public class SpringAppTest {
 
         Arguments arguments = new Arguments();
         arguments.environment = environment;
-        arguments.appClass = TestSpringApp.class.getName();
+        arguments.appClass = TestApplicationConfiguration.class.getName();
         arguments.zookeeper = zookeeper.getConnectString();
         arguments.skipModuleScanning = true;
+        arguments.skipServerInstanceContextInitialization = true;
 
         application = new Application(arguments).start();
 

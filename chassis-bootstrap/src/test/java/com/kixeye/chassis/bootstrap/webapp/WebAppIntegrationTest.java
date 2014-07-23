@@ -1,4 +1,4 @@
-package com.kixeye.chassis.bootstrap.springweb;
+package com.kixeye.chassis.bootstrap.webapp;
 
 /*
  * #%L
@@ -24,13 +24,6 @@ import com.kixeye.chassis.bootstrap.AppMain.Arguments;
 import com.kixeye.chassis.bootstrap.Application;
 import com.kixeye.chassis.bootstrap.SpringConfiguration;
 import com.kixeye.chassis.bootstrap.TestUtils;
-import com.kixeye.chassis.bootstrap.configuration.zookeeper.DynamicZookeeperConfigurationSource;
-import com.netflix.config.ConcurrentCompositeConfiguration;
-import com.netflix.config.ConfigurationManager;
-import com.netflix.config.DynamicWatchedConfiguration;
-import com.netflix.config.WatchedConfigurationSource;
-import com.netflix.config.source.ZooKeeperConfigurationSource;
-import org.apache.commons.configuration.AbstractConfiguration;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.test.TestingServer;
@@ -46,7 +39,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.client.RestTemplate;
-import java.lang.reflect.Field;
 import java.util.AbstractMap.SimpleEntry;
 
 import static com.kixeye.chassis.bootstrap.configuration.BootstrapConfigKeys.APP_VERSION_KEY;
@@ -59,7 +51,7 @@ import static com.kixeye.chassis.bootstrap.configuration.BootstrapConfigKeys.APP
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = SpringConfiguration.class)
 @DirtiesContext
-public class SpringWebAppTest {
+public class WebAppIntegrationTest {
     private static final String VERSION = "1.0.0";
     public static final String KEY = "testkey";
     public static final String KEY_PLACEHOLDER = "${" + KEY + "}";
@@ -89,37 +81,7 @@ public class SpringWebAppTest {
 
     @After
     public void after() throws Exception {
-        ConcurrentCompositeConfiguration mainConfig = (ConcurrentCompositeConfiguration) ConfigurationManager.getConfigInstance();
-
-        for (AbstractConfiguration config : mainConfig.getConfigurations()) {
-            if (config instanceof DynamicWatchedConfiguration) {
-                DynamicWatchedConfiguration dyConfig = (DynamicWatchedConfiguration) config;
-
-                WatchedConfigurationSource configSource = dyConfig.getSource();
-
-                if (configSource instanceof ZooKeeperConfigurationSource) {
-                    ZooKeeperConfigurationSource zkConfigSource = (ZooKeeperConfigurationSource) configSource;
-                    zkConfigSource.close();
-
-                    Field field = ZooKeeperConfigurationSource.class.getDeclaredField("client");
-                    field.setAccessible(true);
-
-                    CuratorFramework curator = (CuratorFramework) field.get(zkConfigSource);
-                    curator.close();
-                } else if (configSource instanceof DynamicZookeeperConfigurationSource) {
-                    DynamicZookeeperConfigurationSource zkConfigSource = (DynamicZookeeperConfigurationSource) configSource;
-                    zkConfigSource.close();
-
-                    Field field = DynamicZookeeperConfigurationSource.class.getDeclaredField("curatorFramework");
-                    field.setAccessible(true);
-
-                    CuratorFramework curator = (CuratorFramework) field.get(zkConfigSource);
-                    curator.close();
-                }
-            }
-        }
-
-        if(application != null){
+        if (application != null) {
             application.stop();
         }
     }
@@ -143,7 +105,8 @@ public class SpringWebAppTest {
         arguments.zookeeper = zookeeper.getConnectString();
         arguments.skipModuleScanning = true;
 
-        application = new Application(arguments).start();
+        application = new Application(arguments);
+        application.start();
 
         Server httpServer = (Server) application.getApplicationContext().getBean("httpServer");
 
@@ -151,8 +114,13 @@ public class SpringWebAppTest {
 
         String response = restTemplate.getForEntity("http://localhost:" + port + "/getZookeeperProperty", String.class).getBody();
 
+        application.stop();
+
         Assert.assertEquals(value, response);
-        Assert.assertTrue(TestSpringWebApp.onInit);
+        Assert.assertEquals("init", TestSpringWebApp.eventQueue.poll());
+        Assert.assertEquals("postConstruct", TestSpringWebApp.eventQueue.poll());
+        Assert.assertEquals("preDestroy", TestSpringWebApp.eventQueue.poll());
+        Assert.assertEquals("destroy", TestSpringWebApp.eventQueue.poll());
     }
 
 }

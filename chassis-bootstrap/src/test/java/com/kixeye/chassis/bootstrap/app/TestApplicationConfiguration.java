@@ -1,4 +1,4 @@
-package com.kixeye.chassis.bootstrap.spring;
+package com.kixeye.chassis.bootstrap.app;
 
 /*
  * #%L
@@ -20,7 +20,7 @@ package com.kixeye.chassis.bootstrap.spring;
  * #L%
  */
 
-import com.kixeye.chassis.bootstrap.annotation.SpringApp;
+import com.kixeye.chassis.bootstrap.annotation.App;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import javax.annotation.PostConstruct;
@@ -31,10 +31,10 @@ import javax.annotation.PreDestroy;
  *
  * @author dturner@kixeye.com
  */
-@SpringApp(name = SpringAppTest.UNIT_TEST_SPRING_APP, configurationClasses = TestSpringApp.class, webapp = false)
+@App(name = AppIntegrationTest.UNIT_TEST_SPRING_APP, configurationClasses = TestApplicationConfiguration.class, webapp = false)
 @Configuration
-@ComponentScan(basePackageClasses = TestSpringApp.class)
-public class TestSpringApp {
+@ComponentScan(basePackageClasses = TestApplicationConfiguration.class)
+public class TestApplicationConfiguration {
 
     public boolean onInit = false;
     public boolean onDestroy = false;

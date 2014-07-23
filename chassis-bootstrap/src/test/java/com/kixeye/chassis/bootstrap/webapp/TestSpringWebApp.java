@@ -1,4 +1,4 @@
-package com.kixeye.chassis.bootstrap.springweb;
+package com.kixeye.chassis.bootstrap.webapp;
 
 /*
  * #%L
@@ -20,7 +20,10 @@ package com.kixeye.chassis.bootstrap.springweb;
  * #L%
  */
 
-import com.kixeye.chassis.bootstrap.annotation.SpringApp;
+import com.kixeye.chassis.bootstrap.annotation.App;
+import com.kixeye.chassis.bootstrap.annotation.Destroy;
+import com.kixeye.chassis.bootstrap.annotation.Init;
+import com.kixeye.chassis.bootstrap.configuration.ConfigurationProvider;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -36,23 +39,45 @@ import org.springframework.web.context.ConfigurableWebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.config.annotation.DelegatingWebMvcConfiguration;
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import java.net.InetSocketAddress;
+import java.util.Queue;
+import java.util.concurrent.LinkedBlockingDeque;
 
 /**
  * Spring web app configuration
  *
  * @author dturner@kixeye.com
  */
-@SpringApp(name = SpringWebAppTest.UNIT_TEST_SPRING_APP, configurationClasses = TestSpringWebApp.class, webapp = true)
+@App(name = WebAppIntegrationTest.UNIT_TEST_SPRING_APP, configurationClasses = TestSpringWebApp.class, webapp = true)
 @Configuration
 @ComponentScan(basePackageClasses = TestSpringWebApp.class)
 public class TestSpringWebApp extends DelegatingWebMvcConfiguration {
 
-    public static boolean onInit = false;
+    public static Queue<String> eventQueue = new LinkedBlockingDeque<>();
+
+    public static void reset() {
+        eventQueue.clear();
+    }
+
+    @Init
+    public static void init(org.apache.commons.configuration.Configuration configuration, ConfigurationProvider configurationProvider) {
+        eventQueue.add("init");
+    }
+
+    @Destroy
+    public static void destroy() {
+        eventQueue.add("destroy");
+    }
 
     @PostConstruct
-    public void init() {
-        onInit = true;
+    public void postConstruct() {
+        eventQueue.add("postConstruct");
+    }
+
+    @PreDestroy
+    public void preDestroy() {
+        eventQueue.add("preDestroy");
     }
 
     @Bean(initMethod = "start", destroyMethod = "stop", name = "httpServer")
