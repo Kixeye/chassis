@@ -20,7 +20,6 @@ package com.kixeye.chassis.bootstrap;
  * #L%
  */
 
-import com.kixeye.chassis.bootstrap.AppMetadata;
 import com.kixeye.chassis.bootstrap.aws.ServerInstanceContext;
 import com.kixeye.chassis.bootstrap.configuration.ConfigurationBuilder;
 import com.kixeye.chassis.bootstrap.configuration.ConfigurationProvider;
@@ -65,6 +64,9 @@ public class BootstrapConfiguration {
     @Value("${scanModuleConfigurations:true}")
     private boolean scanModuleConfigurations;
 
+    @Value("${skipServerInstanceContextInitialization:true}")
+    private boolean skipServerInstanceContextInitialization;
+
     @Bean
     public Reflections reflections() {
         return REFLECTIONS;
@@ -88,6 +90,9 @@ public class BootstrapConfiguration {
 
     @Bean
     public ServerInstanceContext serverInstanceContext() {
+        if (skipServerInstanceContextInitialization) {
+            return null;
+        }
         return ServerInstanceContext.initialize();
     }
 

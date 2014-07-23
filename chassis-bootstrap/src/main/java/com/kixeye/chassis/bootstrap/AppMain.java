@@ -23,8 +23,6 @@ package com.kixeye.chassis.bootstrap;
 import ch.qos.logback.classic.BasicConfigurator;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
-import com.google.common.collect.Iterators;
-import com.kixeye.chassis.bootstrap.annotation.SpringApp;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
@@ -32,7 +30,6 @@ import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.spi.StringArrayOptionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.env.EnumerablePropertySource;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -143,7 +140,7 @@ public final class AppMain {
         @Option(hidden = true, required = false, name = "--appclass", aliases = "-a", usage = "Explicitly defines the class annotated with @App. If used, scanning for the @App class will be omitted. This is for testing purposes only.")
         public String appClass;
 
-        @Option(hidden = true, required = false, name = "--skipModuleScanning", aliases = "-s", usage = "Skip dependency library scanning")
+        @Option(hidden = true, required = false, name = "--skip-module-scanning", aliases = "-s", usage = "Skip dependency library scanning")
         public boolean skipModuleScanning = false;
 
         @Option(required = false, name = "--help", aliases = "-h", usage = "Display usage information")
@@ -154,6 +151,9 @@ public final class AppMain {
 
         @Option(required = false, name = "--exhibitors-port", aliases = "-xp", usage = "The port the Exhibitors servers are listening on. Defaults to Exhibitor's default (8080).")
         public int exhibitorPort = 8080;
+
+        @Option(required = false, name = "--skip-server-instance-context-initialization", aliases = "-si")
+        public boolean skipServerInstanceContextInitialization = false;
 
         public String getZookeeperHost() {
             return (zookeeper == null || StringUtils.equalsIgnoreCase(zookeeper, "disabled")) ? null : zookeeper;
@@ -178,6 +178,7 @@ public final class AppMain {
             map.put("exhibitorPort", exhibitorPort);
             map.put("exhibitorHosts", getExhibitorHosts());
             map.put("scanModuleConfigurations", !skipModuleScanning);
+            map.put("skipServerInstanceContextInitialization", skipServerInstanceContextInitialization);
         }
     }
 
