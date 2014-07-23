@@ -20,26 +20,17 @@ package com.kixeye.chassis.bootstrap;
  * #L%
  */
 
-import com.kixeye.chassis.bootstrap.annotation.AppMetadata;
+import com.kixeye.chassis.bootstrap.AppMetadata;
 import com.kixeye.chassis.bootstrap.aws.ServerInstanceContext;
 import com.kixeye.chassis.bootstrap.configuration.ConfigurationBuilder;
 import com.kixeye.chassis.bootstrap.configuration.ConfigurationProvider;
 import com.kixeye.chassis.bootstrap.configuration.zookeeper.ZookeeperConfigurationProvider;
-import com.kixeye.chassis.bootstrap.spring.ArchaiusSpringPropertySource;
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.reflections.Reflections;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
-import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 
 /**
  * Spring configuration for beans exposed the Bootstrap spring context. The bootstrap
@@ -49,7 +40,7 @@ import org.springframework.web.context.support.AnnotationConfigWebApplicationCon
  * @author dturner@kixeye.com
  */
 @Configuration
-public class BootstrapConfiguration implements ApplicationListener<ApplicationEvent> {
+public class BootstrapConfiguration {
 
     public static final Reflections REFLECTIONS = new Reflections("", "com.kixeye");
 
@@ -74,9 +65,6 @@ public class BootstrapConfiguration implements ApplicationListener<ApplicationEv
     @Value("${scanModuleConfigurations:true}")
     private boolean scanModuleConfigurations;
 
-    @Autowired
-    private ApplicationContext thisApplicationContext;
-
     @Bean
     public Reflections reflections() {
         return REFLECTIONS;
@@ -84,7 +72,7 @@ public class BootstrapConfiguration implements ApplicationListener<ApplicationEv
 
     @Bean
     public AppMetadata appMetadata() {
-        return AppMetadata.create(appClass, reflections());
+        return new AppMetadata(appClass, reflections());
     }
 
     @Bean
@@ -124,32 +112,4 @@ public class BootstrapConfiguration implements ApplicationListener<ApplicationEv
         return propertySourcesPlaceholderConfigurer;
     }
 
-    @Override
-    public void onApplicationEvent(ApplicationEvent event) {
-        if (event instanceof ContextRefreshedEvent && event.getSource().equals(thisApplicationContext)) {
-            initChildContext(appMetadata(), thisApplicationContext);
-        }
-    }
-
-    private void initChildContext(AppMetadata appMetadata, ApplicationContext rootApplicationContext) {
-        AbstractApplicationContext context;
-        if (appMetadata.isWebapp()) {
-            context = new AnnotationConfigWebApplicationContext();
-            if (appMetadata.getConfigurationClasses().length > 0) {
-                ((AnnotationConfigWebApplicationContext) context).register(appMetadata.getConfigurationClasses());
-            }
-        } else {
-            context = new AnnotationConfigApplicationContext();
-            if (appMetadata.getConfigurationClasses().length > 0) {
-                ((AnnotationConfigApplicationContext) context).register(appMetadata.getConfigurationClasses());
-            }
-        }
-        context.setParent(rootApplicationContext);
-        context.getEnvironment().getPropertySources().addFirst(new ArchaiusSpringPropertySource(appMetadata.getName() + "-archaius"));
-        PropertySourcesPlaceholderConfigurer configurer = new PropertySourcesPlaceholderConfigurer();
-        configurer.setEnvironment(context.getEnvironment());
-        context.addBeanFactoryPostProcessor(configurer);
-        context.setId(appMetadata.getName());
-        context.refresh();
-    }
 }

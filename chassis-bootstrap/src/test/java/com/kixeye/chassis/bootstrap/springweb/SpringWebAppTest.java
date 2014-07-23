@@ -25,7 +25,6 @@ import com.kixeye.chassis.bootstrap.Application;
 import com.kixeye.chassis.bootstrap.SpringConfiguration;
 import com.kixeye.chassis.bootstrap.TestUtils;
 import com.kixeye.chassis.bootstrap.configuration.zookeeper.DynamicZookeeperConfigurationSource;
-import com.kixeye.chassis.bootstrap.spring.TestSpringApp;
 import com.netflix.config.ConcurrentCompositeConfiguration;
 import com.netflix.config.ConfigurationManager;
 import com.netflix.config.DynamicWatchedConfiguration;
@@ -146,7 +145,7 @@ public class SpringWebAppTest {
 
         application = new Application(arguments).start();
 
-        Server httpServer = (Server) application.getChildApplicationContext().getBean("httpServer");
+        Server httpServer = (Server) application.getApplicationContext().getBean("httpServer");
 
         int port = ((ServerConnector) httpServer.getConnectors()[0]).getPort();
 

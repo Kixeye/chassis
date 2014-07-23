@@ -43,7 +43,6 @@ import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.kixeye.chassis.bootstrap.AppMain;
 import com.kixeye.chassis.bootstrap.configuration.zookeeper.DynamicZookeeperConfigurationSource;
 import com.kixeye.chassis.bootstrap.SpringConfiguration;
 import com.kixeye.chassis.bootstrap.TestUtils;
@@ -143,7 +142,7 @@ public class SpringAppTest {
         application = new Application(arguments).start();
 
         //grab the TestComponent that has been component-scanned into the app's spring context.
-        Map<String,TestComponent> beans = application.getChildApplicationContext().getBeansOfType(TestComponent.class);
+        Map<String,TestComponent> beans = application.getApplicationContext().getBeansOfType(TestComponent.class);
         TestComponent testComponent = beans.values().iterator().next();
 
         //assert that the TestComponent has been injected with a property value from zookeeper.
