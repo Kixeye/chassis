@@ -21,11 +21,15 @@ package com.kixeye.chassis.bootstrap;
  */
 
 import com.google.common.base.Preconditions;
+import com.google.common.io.Closeables;
 import com.kixeye.chassis.bootstrap.AppMain.Arguments;
 import com.kixeye.chassis.bootstrap.configuration.ConfigurationProvider;
 import com.kixeye.chassis.bootstrap.spring.ArchaiusSpringPropertySource;
 import com.kixeye.chassis.bootstrap.spring.ArgumentsPropertySource;
+import com.netflix.config.AggregatedConfiguration;
+import com.netflix.config.DynamicWatchedConfiguration;
 import org.apache.commons.configuration.AbstractConfiguration;
+import org.apache.commons.configuration.CompositeConfiguration;
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +40,8 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
+import java.io.Closeable;
+import java.io.IOException;
 
 /**
  * Represents an application configured and started by Bootstrap.
@@ -83,8 +89,39 @@ public class Application implements ApplicationListener<ContextRefreshedEvent>{
             return;
         }
         logger.info("Stopping application \"{}\"", appMetadata.getName());
-        bootstrapApplicationContext.stop();
+        applicationContext.close();
+        bootstrapApplicationContext.close();
         invokeAppDestroyMethod();
+        cleanup();
+    }
+
+    private void cleanup() {
+        try {
+            closeConfiguration(configuration);
+        } catch (IOException e) {
+           throw new BootstrapException("Exception occurred while attempting to cleanup application.",e);
+        }
+    }
+
+    private void closeConfiguration(org.apache.commons.configuration.Configuration configuration) throws IOException {
+        if(configuration instanceof CompositeConfiguration ){
+            CompositeConfiguration config = (CompositeConfiguration) configuration;
+            for(int i=0;i<config.getNumberOfConfigurations();i++){
+                closeConfiguration(config.getConfiguration(i));
+            }
+        } else if (configuration instanceof AggregatedConfiguration){
+            AggregatedConfiguration config = (AggregatedConfiguration) configuration;
+            for(int i=0;i<config.getNumberOfConfigurations();i++){
+                closeConfiguration(config.getConfiguration(i));
+            }
+        } else {
+            if(configuration instanceof DynamicWatchedConfiguration){
+                DynamicWatchedConfiguration dynamicWatchedConfiguration = (DynamicWatchedConfiguration) configuration;
+                if(dynamicWatchedConfiguration.getSource() instanceof Closeable){
+                    Closeables.close((Closeable) dynamicWatchedConfiguration.getSource(), true);
+                }
+            }
+        }
     }
 
     private void invokeAppDestroyMethod() {
