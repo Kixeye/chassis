@@ -22,14 +22,9 @@ package com.kixeye.chassis.bootstrap;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
-import com.kixeye.chassis.bootstrap.AppDestroyMethod;
-import com.kixeye.chassis.bootstrap.AppInitMethod;
-import com.kixeye.chassis.bootstrap.BootstrapConfiguration;
-import com.kixeye.chassis.bootstrap.BootstrapException;
 import com.kixeye.chassis.bootstrap.annotation.App;
 import com.kixeye.chassis.bootstrap.annotation.Destroy;
 import com.kixeye.chassis.bootstrap.annotation.Init;
-import com.kixeye.chassis.bootstrap.annotation.SpringApp;
 import org.apache.commons.lang.StringUtils;
 import org.reflections.ReflectionUtils;
 import org.reflections.Reflections;
@@ -38,7 +33,7 @@ import java.lang.reflect.Method;
 import java.util.Set;
 
 /**
- * Contains the values of {@link com.kixeye.chassis.bootstrap.annotation.App} and the deprecated {@link com.kixeye.chassis.bootstrap.annotation.SpringApp}. It is used
+ * Contains the values of {@link com.kixeye.chassis.bootstrap.annotation.App}. It is used
  * instead passing around the annotation instances so the code doesn't have to care which
  * annotation was the source of the properties.
  *
@@ -82,7 +77,7 @@ public class AppMetadata {
         return initMethod;
     }
 
-    public AppDestroyMethod getDestroyMethod(){
+    public AppDestroyMethod getDestroyMethod() {
         return destroyMethod;
     }
 
@@ -94,14 +89,14 @@ public class AppMetadata {
 
     private void initAppDestroyMethod() {
         Method method = findLifecycleMethod(Destroy.class);
-        if(method != null){
+        if (method != null) {
             this.destroyMethod = new AppDestroyMethod(method, declaringClass);
         }
     }
 
     private void initAppInitMethod() {
         Method method = findLifecycleMethod(Init.class);
-        if(method != null){
+        if (method != null) {
             this.initMethod = new AppInitMethod(method, declaringClass);
         }
     }
@@ -128,12 +123,7 @@ public class AppMetadata {
             setAnnotationValues(app.name(), app.propertiesResourceLocation(), app.webapp(), app.configurationClasses());
             return;
         }
-        SpringApp springApp = declaringClass.getAnnotation(SpringApp.class);
-        if (springApp != null) {
-            setAnnotationValues(springApp.name(), springApp.propertiesResourceLocation(), springApp.webapp(), springApp.configurationClasses());
-            return;
-        }
-        throw new BootstrapException("Declaring class " + declaringClass.getSigners() + " is not annotated with " + App.class.getSimpleName() + " or " + SpringApp.class.getSimpleName() + ".");
+        throw new BootstrapException("Declaring class " + declaringClass.getSimpleName() + " is not annotated with " + App.class.getSimpleName() + ".");
     }
 
     private void initDeclaringClass(String appClass, Reflections reflections) {
@@ -142,10 +132,7 @@ public class AppMetadata {
         }
         declaringClass = findDeclaringClass(App.class, reflections);
         if (declaringClass == null) {
-            declaringClass = findDeclaringClass(SpringApp.class, reflections);
-        }
-        if (declaringClass == null) {
-            throw new BootstrapException("Unable to find any classes annotated with " + App.class.getSimpleName() + " or " + SpringApp.class.getSimpleName() + ".");
+            throw new BootstrapException("Unable to find any classes annotated with " + App.class.getSimpleName() + ".");
         }
     }
 
