@@ -264,10 +264,6 @@ public class ConfigurationBuilder implements Closeable {
         configurationProvider.writeApplicationConfiguration(appEnvironment, appName, appVersion, defaultsBuilder.build(), false);
     }
 
-    private String buildZookeeperApplicationBasePath() {
-        return "/" + appEnvironment + "/" + appName + "/" + appVersion;
-    }
-
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void initApplicationFileConfiguration() {
         if (applicationPropertiesPath == null) {
