@@ -63,7 +63,8 @@ public final class AppMain {
 
         initializeLogging(arguments);
 
-        application = new Application(arguments).start();
+        application = new Application(arguments);
+        application.start();
 
         registerShutdownHook();
 
