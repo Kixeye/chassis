@@ -35,4 +35,5 @@ To run one of the template applications, fork it and then:
 
 Once the application is started, navigate to http://localhost:8080/swagger in your web browser.
 
-For further details about how to use KIXEYE Chassis, take a look at the [wiki](https://github.com/Kixeye/chassis/wiki).
+#### Bootstrap
+The chassis-bootstrap library provides application bootstrapping functionality to start and configure your self-contained applications. Head over to the [Bootstrap page](https://github.com/Kixeye/chassis/tree/master/chassis-bootstrap) for details.
