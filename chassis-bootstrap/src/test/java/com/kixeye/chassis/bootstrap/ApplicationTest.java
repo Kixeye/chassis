@@ -29,6 +29,7 @@ import com.kixeye.chassis.bootstrap.configuration.ConfigurationProvider;
 import org.apache.commons.configuration.Configuration;
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -39,6 +40,11 @@ import org.junit.Test;
 public class ApplicationTest {
 
     private Application application;
+
+    @Before
+    public void before() throws Exception{
+        TestUtils.resetArchaius();
+    }
 
     @After
     public void after(){
