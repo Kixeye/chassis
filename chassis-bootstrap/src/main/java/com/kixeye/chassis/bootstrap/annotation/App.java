@@ -51,9 +51,8 @@ public @interface App{
     /**
      * Spring Java config classes. Should be annotated with @Configuration
      *
-     * @return
      */
-    public Class<?>[] configurationClasses();
+    public Class<?>[] configurationClasses() default {};
 
     /**
      * whether or not it is a web application
