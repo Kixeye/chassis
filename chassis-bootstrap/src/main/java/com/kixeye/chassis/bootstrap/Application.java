@@ -48,7 +48,7 @@ import java.io.IOException;
  *
  * @author dturner@kixeye.com
  */
-public class Application implements ApplicationListener<ContextRefreshedEvent>{
+public class Application implements ApplicationListener<ContextRefreshedEvent> {
 
     private static final Logger logger = LoggerFactory.getLogger(Application.class);
 
@@ -70,9 +70,9 @@ public class Application implements ApplicationListener<ContextRefreshedEvent>{
 
     /**
      * Start the application.
-     * @throws InterruptedException
+     *
      */
-    public Application start() throws InterruptedException {
+    public Application start() {
         logger.debug("Starting application...");
 
         bootstrapApplicationContext.refresh();
@@ -99,25 +99,25 @@ public class Application implements ApplicationListener<ContextRefreshedEvent>{
         try {
             closeConfiguration(configuration);
         } catch (IOException e) {
-           throw new BootstrapException("Exception occurred while attempting to cleanup application.",e);
+            throw new BootstrapException("Exception occurred while attempting to cleanup application.", e);
         }
     }
 
     private void closeConfiguration(org.apache.commons.configuration.Configuration configuration) throws IOException {
-        if(configuration instanceof CompositeConfiguration ){
+        if (configuration instanceof CompositeConfiguration) {
             CompositeConfiguration config = (CompositeConfiguration) configuration;
-            for(int i=0;i<config.getNumberOfConfigurations();i++){
+            for (int i = 0; i < config.getNumberOfConfigurations(); i++) {
                 closeConfiguration(config.getConfiguration(i));
             }
-        } else if (configuration instanceof AggregatedConfiguration){
+        } else if (configuration instanceof AggregatedConfiguration) {
             AggregatedConfiguration config = (AggregatedConfiguration) configuration;
-            for(int i=0;i<config.getNumberOfConfigurations();i++){
+            for (int i = 0; i < config.getNumberOfConfigurations(); i++) {
                 closeConfiguration(config.getConfiguration(i));
             }
         } else {
-            if(configuration instanceof DynamicWatchedConfiguration){
+            if (configuration instanceof DynamicWatchedConfiguration) {
                 DynamicWatchedConfiguration dynamicWatchedConfiguration = (DynamicWatchedConfiguration) configuration;
-                if(dynamicWatchedConfiguration.getSource() instanceof Closeable){
+                if (dynamicWatchedConfiguration.getSource() instanceof Closeable) {
                     Closeables.close((Closeable) dynamicWatchedConfiguration.getSource(), true);
                 }
             }
@@ -126,7 +126,7 @@ public class Application implements ApplicationListener<ContextRefreshedEvent>{
 
     private void invokeAppDestroyMethod() {
         AppDestroyMethod destroyMethod = appMetadata.getDestroyMethod();
-        if(destroyMethod != null){
+        if (destroyMethod != null) {
             destroyMethod.invoke();
         }
     }
@@ -165,7 +165,7 @@ public class Application implements ApplicationListener<ContextRefreshedEvent>{
     public void onApplicationEvent(ContextRefreshedEvent event) {
         logger.debug("Received ContextRefreshedEvent {}", event);
 
-        if(event.getSource().equals(getBootstrapApplicationContext())){
+        if (event.getSource().equals(getBootstrapApplicationContext())) {
             //the root context is fully started
             appMetadata = bootstrapApplicationContext.getBean(AppMetadata.class);
             configuration = bootstrapApplicationContext.getBean(AbstractConfiguration.class);
@@ -178,7 +178,7 @@ public class Application implements ApplicationListener<ContextRefreshedEvent>{
             return;
         }
 
-        if(event.getSource() instanceof ApplicationContext && ((ApplicationContext) event.getSource()).getId().equals(appMetadata.getName())){
+        if (event.getSource() instanceof ApplicationContext && ((ApplicationContext) event.getSource()).getId().equals(appMetadata.getName())) {
             //the child context is fully started
             this.applicationContext = (AbstractApplicationContext) event.getSource();
 
@@ -194,7 +194,7 @@ public class Application implements ApplicationListener<ContextRefreshedEvent>{
 
     private void invokeAppInitMethod() {
         AppInitMethod init = appMetadata.getInitMethod();
-        if(init != null){
+        if (init != null) {
             init.invoke(configuration, configurationProvider);
         }
     }
