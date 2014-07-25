@@ -23,7 +23,13 @@ package com.kixeye.chassis.transport.http;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.SlidingTimeWindowReservoir;
+import com.codahale.metrics.SlidingWindowReservoir;
 import com.codahale.metrics.Timer;
+import com.netflix.config.DynamicIntProperty;
+import com.netflix.config.DynamicLongProperty;
+import com.netflix.config.DynamicProperty;
+import com.netflix.config.DynamicPropertyFactory;
 import org.eclipse.jetty.http.HttpMethod;
 import org.eclipse.jetty.server.AsyncContextState;
 import org.eclipse.jetty.server.HttpChannelState;
@@ -86,11 +92,12 @@ public class InstrumentedHandler extends HandlerWrapper {
 
     private AsyncListener listener;
 
+    private DynamicLongProperty timerReservoirSeconds = DynamicPropertyFactory.getInstance().getLongProperty("http.metrics.handler.timerReservoirSeconds", 100);
+
     /**
      * Create a new instrumented handler using a given metrics registry.
      *
-     * @param registry   the registry for the metrics
-     *
+     * @param registry the registry for the metrics
      */
     public InstrumentedHandler(MetricRegistry registry) {
         this.metricRegistry = registry;
@@ -128,16 +135,16 @@ public class InstrumentedHandler extends HandlerWrapper {
                 metricRegistry.meter(name(prefix, "5xx-responses"))  // 5xx
         };
 
-        this.getRequests = metricRegistry.timer(name(prefix, "get-requests"));
-        this.postRequests = metricRegistry.timer(name(prefix, "post-requests"));
-        this.headRequests = metricRegistry.timer(name(prefix, "head-requests"));
-        this.putRequests = metricRegistry.timer(name(prefix, "put-requests"));
-        this.deleteRequests = metricRegistry.timer(name(prefix, "delete-requests"));
-        this.optionsRequests = metricRegistry.timer(name(prefix, "options-requests"));
-        this.traceRequests = metricRegistry.timer(name(prefix, "trace-requests"));
-        this.connectRequests = metricRegistry.timer(name(prefix, "connect-requests"));
-        this.moveRequests = metricRegistry.timer(name(prefix, "move-requests"));
-        this.otherRequests = metricRegistry.timer(name(prefix, "other-requests"));
+        this.getRequests = timer(name(prefix, "get-requests"));
+        this.postRequests = timer(name(prefix, "post-requests"));
+        this.headRequests = timer(name(prefix, "head-requests"));
+        this.putRequests = timer(name(prefix, "put-requests"));
+        this.deleteRequests = timer(name(prefix, "delete-requests"));
+        this.optionsRequests = timer(name(prefix, "options-requests"));
+        this.traceRequests = timer(name(prefix, "trace-requests"));
+        this.connectRequests = timer(name(prefix, "connect-requests"));
+        this.moveRequests = timer(name(prefix, "move-requests"));
+        this.otherRequests = timer(name(prefix, "other-requests"));
 
         this.listener = new AsyncListener() {
             @Override
@@ -159,11 +166,24 @@ public class InstrumentedHandler extends HandlerWrapper {
                 final AsyncContextState state = (AsyncContextState) event.getAsyncContext();
                 final Request request = (Request) state.getRequest();
                 updateResponses(request);
-                if (!(state.getHttpChannelState().getState()==State.DISPATCHED)) {
+                if (!(state.getHttpChannelState().getState() == State.DISPATCHED)) {
                     activeSuspended.dec();
                 }
             }
         };
+    }
+
+    private Timer timer(String name) {
+        Timer timer = metricRegistry.getTimers().get(name);
+        if (timer != null) {
+            return timer;
+        }
+        try {
+            return metricRegistry.register(name, new Timer(new SlidingTimeWindowReservoir(timerReservoirSeconds.get(), TimeUnit.SECONDS)));
+        } catch (IllegalArgumentException e) {
+            //timer already exists. this happens due to race condition. its fine.
+            return metricRegistry.getTimers().get(name);
+        }
     }
 
     @Override
