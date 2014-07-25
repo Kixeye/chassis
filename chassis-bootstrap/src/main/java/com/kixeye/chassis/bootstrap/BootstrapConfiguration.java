@@ -43,7 +43,7 @@ public class BootstrapConfiguration {
 
     public static final Reflections REFLECTIONS = new Reflections("", "com.kixeye");
 
-    @Value("${appEnvironment}")
+    @Value("${appEnvironment:null}")
     private String appEnvironment;
 
     @Value("${zookeeperConnectionString:null}")
@@ -80,6 +80,10 @@ public class BootstrapConfiguration {
     @Bean
     public AbstractConfiguration applicationConfiguration() throws ClassNotFoundException {
         AppMetadata appMetadata = appMetadata();
+        ServerInstanceContext serverInstanceContext = serverInstanceContext();
+        if(appEnvironment == null && serverInstanceContext != null){
+            appEnvironment = serverInstanceContext.getEnvironment();
+        }
         ConfigurationBuilder configurationBuilder = new ConfigurationBuilder(appMetadata.getName(), appEnvironment, addSystemConfigs, reflections());
         configurationBuilder.withConfigurationProvider(configurationProvider());
         configurationBuilder.withServerInstanceContext(serverInstanceContext());
