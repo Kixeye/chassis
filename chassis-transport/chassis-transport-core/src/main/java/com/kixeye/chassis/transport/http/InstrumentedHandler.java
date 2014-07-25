@@ -92,7 +92,7 @@ public class InstrumentedHandler extends HandlerWrapper {
 
     private AsyncListener listener;
 
-    private DynamicLongProperty timerReservoirSeconds = DynamicPropertyFactory.getInstance().getLongProperty("http.metrics.handler.timerReservoirSeconds", 100);
+    private DynamicLongProperty timerReservoirSeconds = DynamicPropertyFactory.getInstance().getLongProperty("http.metrics.handler.timerReservoirSeconds", 60);
 
     /**
      * Create a new instrumented handler using a given metrics registry.
