@@ -23,6 +23,7 @@ package com.kixeye.chassis.bootstrap;
 import com.google.common.base.Preconditions;
 import com.google.common.io.Closeables;
 import com.kixeye.chassis.bootstrap.AppMain.Arguments;
+import com.kixeye.chassis.bootstrap.aws.ServerInstanceContext;
 import com.kixeye.chassis.bootstrap.configuration.ConfigurationProvider;
 import com.kixeye.chassis.bootstrap.spring.ArchaiusSpringPropertySource;
 import com.kixeye.chassis.bootstrap.spring.ArgumentsPropertySource;
@@ -58,6 +59,7 @@ public class Application implements ApplicationListener<ContextRefreshedEvent> {
     private AppMetadata appMetadata;
     private AbstractConfiguration configuration;
     private ConfigurationProvider configurationProvider;
+    private ServerInstanceContext serverInstanceContext;
 
     public Application(Arguments arguments) {
         Preconditions.checkNotNull(arguments);
@@ -170,6 +172,7 @@ public class Application implements ApplicationListener<ContextRefreshedEvent> {
             appMetadata = bootstrapApplicationContext.getBean(AppMetadata.class);
             configuration = bootstrapApplicationContext.getBean(AbstractConfiguration.class);
             configurationProvider = bootstrapApplicationContext.getBean(ConfigurationProvider.class);
+            serverInstanceContext = bootstrapApplicationContext.getBean(ServerInstanceContext.class);
 
             logger.debug("Root context started");
 
@@ -188,6 +191,8 @@ public class Application implements ApplicationListener<ContextRefreshedEvent> {
     }
 
     private void initClientApplication() {
+
+
         invokeAppInitMethod();
         createChildContext();
     }

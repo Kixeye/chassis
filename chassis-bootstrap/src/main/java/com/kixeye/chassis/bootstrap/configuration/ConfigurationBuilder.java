@@ -152,6 +152,8 @@ public class ConfigurationBuilder implements Closeable {
             finalConfiguration.addConfiguration(applicationFileConfiguration);
         }
 
+        finalConfiguration.setProperty(BootstrapConfigKeys.APP_VERSION_KEY.getPropertyName(), appVersion);
+
         configureArchaius(finalConfiguration);
 
         logConfiguration(finalConfiguration);
@@ -197,12 +199,6 @@ public class ConfigurationBuilder implements Closeable {
 
     private void logConfiguration(ConcurrentCompositeConfiguration configuration) {
         new LoggerConfigurationWriter(LOGGER).write(configuration, null);
-    }
-
-    private void checkAppVersion() {
-        if (StringUtils.isBlank(appVersion)) {
-            BootstrapException.missingApplicationVersion();
-        }
     }
 
     private void initModuleConfiguration() {
@@ -323,22 +319,17 @@ public class ConfigurationBuilder implements Closeable {
     }
 
     private void initAppVersion() {
-        if (applicationFileConfiguration == null) {
-            throw new BootstrapException("client application configuration is null.");
-        }
+        //if version not already set, pull from system props, then application file props
         if (appVersion == null) {
-            if (System.getProperty(BootstrapConfigKeys.APP_VERSION_KEY.getPropertyName()) != null) {
-                this.appVersion = System.getProperty(BootstrapConfigKeys.APP_VERSION_KEY.getPropertyName());
-                return;
-            }
-            if (applicationFileConfiguration != null && applicationFileConfiguration.containsKey(BootstrapConfigKeys.APP_VERSION_KEY.getPropertyName())) {
-                System.setProperty(BootstrapConfigKeys.APP_VERSION_KEY.getPropertyName(), applicationFileConfiguration.getString(BootstrapConfigKeys.APP_VERSION_KEY.getPropertyName()));
+            appVersion = System.getProperty(BootstrapConfigKeys.APP_VERSION_KEY.getPropertyName(), null);
+            if(appVersion == null && applicationFileConfiguration != null){
+                appVersion = applicationFileConfiguration.getString(BootstrapConfigKeys.APP_VERSION_KEY.getPropertyName(), null);
             }
         }
-        if (applicationFileConfiguration.containsKey(BootstrapConfigKeys.APP_VERSION_KEY.getPropertyName())) {
-            this.appVersion = applicationFileConfiguration.getString(BootstrapConfigKeys.APP_VERSION_KEY.getPropertyName());
+        if (StringUtils.isBlank(appVersion)) {
+            BootstrapException.missingApplicationVersion();
         }
-        checkAppVersion();
+        System.setProperty(BootstrapConfigKeys.APP_VERSION_KEY.getPropertyName(), appVersion);
     }
 
     public ConfigurationBuilder withServerInstanceContext(ServerInstanceContext serverInstanceContext) {

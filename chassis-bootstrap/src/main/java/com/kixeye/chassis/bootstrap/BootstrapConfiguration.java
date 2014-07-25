@@ -21,6 +21,7 @@ package com.kixeye.chassis.bootstrap;
  */
 
 import com.kixeye.chassis.bootstrap.aws.ServerInstanceContext;
+import com.kixeye.chassis.bootstrap.configuration.BootstrapConfigKeys;
 import com.kixeye.chassis.bootstrap.configuration.ConfigurationBuilder;
 import com.kixeye.chassis.bootstrap.configuration.ConfigurationProvider;
 import com.kixeye.chassis.bootstrap.configuration.zookeeper.ZookeeperConfigurationProvider;
@@ -89,7 +90,14 @@ public class BootstrapConfiguration {
         configurationBuilder.withServerInstanceContext(serverInstanceContext());
         configurationBuilder.withApplicationProperties(appMetadata.getPropertiesResourceLocation());
         configurationBuilder.withScanModuleConfigurations(scanModuleConfigurations);
-        return configurationBuilder.build();
+        configurationBuilder.withAppVersion(appMetadata.getDeclaringClass().getPackage().getImplementationVersion());
+        AbstractConfiguration configuration = configurationBuilder.build();
+        if(serverInstanceContext != null){
+            serverInstanceContext.setAppName(appMetadata.getName());
+            serverInstanceContext.setVersion(configuration.getString(BootstrapConfigKeys.APP_VERSION_KEY.getPropertyName()));
+            serverInstanceContext.tagInstance();
+        }
+        return configuration;
     }
 
     @Bean

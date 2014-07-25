@@ -30,6 +30,7 @@ import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingCli
 import com.amazonaws.services.elasticloadbalancing.model.ListenerDescription;
 import com.amazonaws.services.elasticloadbalancing.model.LoadBalancerDescription;
 import com.amazonaws.util.EC2MetadataUtils;
+import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.kixeye.chassis.bootstrap.BootstrapException;
 import org.apache.commons.lang.StringUtils;
@@ -261,12 +262,14 @@ public class ServerInstanceContext {
         return exhibitorPort;
     }
 
-    public void tagInstance(String tagInstanceName) {
+    public void tagInstance() {
         Preconditions.checkArgument(StringUtils.isNotBlank(appName), "App Name is required");
         Preconditions.checkArgument(StringUtils.isNotBlank(environment), "Environment is required");
         Preconditions.checkArgument(StringUtils.isNotBlank(version), "Version is required");
 
-        Tag nameTag = new Tag().withKey("Name").withValue(tagInstanceName);
+        String tagName = Joiner.on("-").join(environment, appName, version);
+
+        Tag nameTag = new Tag().withKey("Name").withValue(tagName);
         Tag appTag = new Tag().withKey("Application").withValue(appName);
         Tag envTag = new Tag().withKey("Environment").withValue(environment);
         Tag versionTag = new Tag().withKey("Version").withValue(version);

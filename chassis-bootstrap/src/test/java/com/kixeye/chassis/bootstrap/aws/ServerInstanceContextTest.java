@@ -275,7 +275,7 @@ public class ServerInstanceContextTest {
 
         context.setAppName(name);
         context.setVersion(version);
-        context.tagInstance(tagName);
+        context.tagInstance();
 
         Assert.assertEquals(name, context.getAppName());
 
