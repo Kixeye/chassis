@@ -117,8 +117,8 @@ public class InstrumentedHandler extends HandlerWrapper {
 
         final String prefix = name(getHandler().getClass(), name);
 
-        this.requests = metricRegistry.timer(name(prefix, "requests"));
-        this.dispatches = metricRegistry.timer(name(prefix, "dispatches"));
+        this.requests = timer(name(prefix, "requests"));
+        this.dispatches = timer(name(prefix, "dispatches"));
 
         this.activeRequests = metricRegistry.counter(name(prefix, "active-requests"));
         this.activeDispatches = metricRegistry.counter(name(prefix, "active-dispatches"));
