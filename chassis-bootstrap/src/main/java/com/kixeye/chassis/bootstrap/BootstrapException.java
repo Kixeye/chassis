@@ -73,6 +73,10 @@ public class BootstrapException extends RuntimeException {
         throw new ZookeeperExhibitorUsageException();
     }
 
+    public static void applicationRestartAttempted(){
+        throw new ApplicationRestartException();
+    }
+
     public static class MissingApplicationVersionException extends BootstrapException {
 
         public MissingApplicationVersionException() {
@@ -120,6 +124,12 @@ public class BootstrapException extends RuntimeException {
                     + propertyFile
                     + ". Check that all default property files contains unique keys. Files: "
                     + Arrays.toString(propertyFiles));
+        }
+    }
+
+    public static class ApplicationRestartException extends BootstrapException{
+        public ApplicationRestartException(){
+            super("Application cannot be restarted.");
         }
     }
 

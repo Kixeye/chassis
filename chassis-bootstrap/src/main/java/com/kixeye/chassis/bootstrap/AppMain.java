@@ -61,9 +61,11 @@ public final class AppMain {
         initializeLogging(arguments);
 
         application = new Application(arguments);
-        application.start();
 
         registerShutdownHook();
+
+        application.start();
+
 
         while (application.isRunning()) {
             //keep the main thread alive

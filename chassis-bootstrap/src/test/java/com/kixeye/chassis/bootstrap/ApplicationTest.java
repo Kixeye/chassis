@@ -21,6 +21,7 @@ package com.kixeye.chassis.bootstrap;
  */
 
 import com.kixeye.chassis.bootstrap.AppMain.Arguments;
+import com.kixeye.chassis.bootstrap.BootstrapException.ApplicationRestartException;
 import com.kixeye.chassis.bootstrap.annotation.App;
 import com.kixeye.chassis.bootstrap.annotation.Destroy;
 import com.kixeye.chassis.bootstrap.annotation.Init;
@@ -64,7 +65,7 @@ public class ApplicationTest {
 
         System.setProperty(BootstrapConfigKeys.APP_VERSION_KEY.getPropertyName(), "1.0");
 
-         application = new Application(arguments);
+        application = new Application(arguments);
 
         Assert.assertEquals(false, TestApp.initCalled);
         Assert.assertEquals(false, TestApp.destroyCalled);
@@ -76,6 +77,36 @@ public class ApplicationTest {
         application.stop();
 
         Assert.assertEquals(true, TestApp.destroyCalled);
+    }
+
+    @Test
+    public void testRestart() {
+        Arguments arguments = new Arguments();
+        arguments.appClass = TestApp.class.getName();
+        arguments.skipModuleScanning = true;
+        arguments.environment = "test";
+        arguments.skipServerInstanceContextInitialization = true;
+
+        System.setProperty(BootstrapConfigKeys.APP_VERSION_KEY.getPropertyName(), "1.0");
+
+        application = new Application(arguments);
+
+        Assert.assertFalse(application.isRunning());
+
+        application.start();
+
+        Assert.assertTrue(application.isRunning());
+
+        application.stop();
+
+        Assert.assertFalse(application.isRunning());
+
+        try{
+            application.start();
+            Assert.fail();
+        } catch (ApplicationRestartException e){
+
+        }
     }
 
     @App(name = "TestApp")

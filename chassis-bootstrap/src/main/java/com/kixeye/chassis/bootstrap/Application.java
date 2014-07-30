@@ -43,6 +43,7 @@ import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Represents an application configured and started by Bootstrap.
@@ -59,7 +60,16 @@ public class Application implements ApplicationListener<ContextRefreshedEvent> {
     private AppMetadata appMetadata;
     private AbstractConfiguration configuration;
     private ConfigurationProvider configurationProvider;
-    private ServerInstanceContext serverInstanceContext;
+
+    private AtomicReference<State> state = new AtomicReference<>(State.NEW);
+
+    private enum State {
+        NEW,
+        STOPPED,
+        STARTING,
+        STOPPING,
+        RUNNING
+    }
 
     public Application(Arguments arguments) {
         Preconditions.checkNotNull(arguments);
@@ -72,9 +82,15 @@ public class Application implements ApplicationListener<ContextRefreshedEvent> {
 
     /**
      * Start the application.
-     *
      */
     public Application start() {
+        if (!state.compareAndSet(State.NEW, State.STARTING)) {
+            if (state.get().equals(State.STOPPED)) {
+                BootstrapException.applicationRestartAttempted();
+            }
+            return this;
+        }
+
         logger.debug("Starting application...");
 
         bootstrapApplicationContext.refresh();
@@ -87,7 +103,7 @@ public class Application implements ApplicationListener<ContextRefreshedEvent> {
      * Stop the application.
      */
     public void stop() {
-        if (!bootstrapApplicationContext.isRunning()) {
+        if (!state.compareAndSet(State.RUNNING, State.STOPPING)) {
             return;
         }
         logger.info("Stopping application \"{}\"", appMetadata.getName());
@@ -95,6 +111,7 @@ public class Application implements ApplicationListener<ContextRefreshedEvent> {
         bootstrapApplicationContext.close();
         invokeAppDestroyMethod();
         cleanup();
+        state.compareAndSet(State.STOPPING, State.STOPPED);
     }
 
     private void cleanup() {
@@ -137,7 +154,7 @@ public class Application implements ApplicationListener<ContextRefreshedEvent> {
      * whether the application is running or not
      */
     public boolean isRunning() {
-        return bootstrapApplicationContext.isRunning() && applicationContext != null && applicationContext.isRunning();
+        return state.compareAndSet(State.RUNNING, State.RUNNING);
     }
 
     /**
@@ -172,7 +189,6 @@ public class Application implements ApplicationListener<ContextRefreshedEvent> {
             appMetadata = bootstrapApplicationContext.getBean(AppMetadata.class);
             configuration = bootstrapApplicationContext.getBean(AbstractConfiguration.class);
             configurationProvider = bootstrapApplicationContext.getBean(ConfigurationProvider.class);
-            serverInstanceContext = bootstrapApplicationContext.getBean(ServerInstanceContext.class);
 
             logger.debug("Root context started");
 
@@ -188,11 +204,10 @@ public class Application implements ApplicationListener<ContextRefreshedEvent> {
             logger.debug("Child context started");
         }
 
+        state.compareAndSet(State.STARTING, State.RUNNING);
     }
 
     private void initClientApplication() {
-
-
         invokeAppInitMethod();
         createChildContext();
     }
