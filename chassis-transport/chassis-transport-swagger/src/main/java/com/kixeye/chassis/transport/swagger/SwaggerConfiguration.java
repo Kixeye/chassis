@@ -20,19 +20,8 @@ package com.kixeye.chassis.transport.swagger;
  * #L%
  */
 
-import com.fasterxml.classmate.ResolvedType;
-import com.fasterxml.classmate.TypeResolver;
-import com.google.common.base.Preconditions;
-import com.mangofactory.swagger.configuration.SpringSwaggerConfig;
-import com.mangofactory.swagger.models.DefaultModelPropertiesProvider;
-import com.mangofactory.swagger.models.DefaultModelProvider;
-import com.mangofactory.swagger.models.ModelDependencyProvider;
-import com.mangofactory.swagger.models.ModelProvider;
-import com.mangofactory.swagger.models.alternates.AlternateTypeProvider;
-import com.mangofactory.swagger.models.alternates.AlternateTypeRule;
-import com.mangofactory.swagger.plugin.EnableSwagger;
-import com.mangofactory.swagger.plugin.SwaggerSpringMvcPlugin;
-import com.wordnik.swagger.model.ApiInfo;
+import java.util.concurrent.Future;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -40,7 +29,19 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.context.request.async.DeferredResult;
-import java.util.concurrent.Future;
+
+import com.fasterxml.classmate.ResolvedType;
+import com.fasterxml.classmate.TypeResolver;
+import com.google.common.base.Preconditions;
+import com.mangofactory.swagger.configuration.SpringSwaggerConfig;
+import com.mangofactory.swagger.models.DefaultModelPropertiesProvider;
+import com.mangofactory.swagger.models.DefaultModelProvider;
+import com.mangofactory.swagger.models.ModelDependencyProvider;
+import com.mangofactory.swagger.models.alternates.AlternateTypeProvider;
+import com.mangofactory.swagger.models.alternates.AlternateTypeRule;
+import com.mangofactory.swagger.plugin.EnableSwagger;
+import com.mangofactory.swagger.plugin.SwaggerSpringMvcPlugin;
+import com.wordnik.swagger.model.ApiInfo;
 
 /**
  * Configures Swagger.

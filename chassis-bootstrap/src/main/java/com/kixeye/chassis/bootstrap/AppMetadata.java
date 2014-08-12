@@ -20,17 +20,19 @@ package com.kixeye.chassis.bootstrap;
  * #L%
  */
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.util.Set;
+
+import org.apache.commons.lang.StringUtils;
+import org.reflections.ReflectionUtils;
+import org.reflections.Reflections;
+
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.kixeye.chassis.bootstrap.annotation.App;
 import com.kixeye.chassis.bootstrap.annotation.Destroy;
 import com.kixeye.chassis.bootstrap.annotation.Init;
-import org.apache.commons.lang.StringUtils;
-import org.reflections.ReflectionUtils;
-import org.reflections.Reflections;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.util.Set;
 
 /**
  * Contains the values of {@link com.kixeye.chassis.bootstrap.annotation.App}. It is used
@@ -43,7 +45,7 @@ public class AppMetadata {
     private String name;
     private String propertiesResourceLocation;
     private boolean webapp;
-    private Class[] configurationClasses;
+    private Class<?>[] configurationClasses;
     private Class<?> declaringClass;
     private AppInitMethod initMethod;
     private AppDestroyMethod destroyMethod;
@@ -65,7 +67,7 @@ public class AppMetadata {
         return webapp;
     }
 
-    public Class[] getConfigurationClasses() {
+    public Class<?>[] getConfigurationClasses() {
         return configurationClasses;
     }
 
@@ -101,7 +103,8 @@ public class AppMetadata {
         }
     }
 
-    private Method findLifecycleMethod(final Class lifecycleAnnotationClass) {
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+	private Method findLifecycleMethod(final Class lifecycleAnnotationClass) {
         Set<Method> methods = ReflectionUtils.getMethods(declaringClass, new Predicate<Method>() {
             @Override
             public boolean apply(Method input) {

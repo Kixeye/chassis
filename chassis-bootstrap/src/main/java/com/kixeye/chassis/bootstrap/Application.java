@@ -20,15 +20,10 @@ package com.kixeye.chassis.bootstrap;
  * #L%
  */
 
-import com.google.common.base.Preconditions;
-import com.google.common.io.Closeables;
-import com.kixeye.chassis.bootstrap.AppMain.Arguments;
-import com.kixeye.chassis.bootstrap.aws.ServerInstanceContext;
-import com.kixeye.chassis.bootstrap.configuration.ConfigurationProvider;
-import com.kixeye.chassis.bootstrap.spring.ArchaiusSpringPropertySource;
-import com.kixeye.chassis.bootstrap.spring.ArgumentsPropertySource;
-import com.netflix.config.AggregatedConfiguration;
-import com.netflix.config.DynamicWatchedConfiguration;
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.apache.commons.configuration.CompositeConfiguration;
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
@@ -41,9 +36,15 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
-import java.io.Closeable;
-import java.io.IOException;
-import java.util.concurrent.atomic.AtomicReference;
+
+import com.google.common.base.Preconditions;
+import com.google.common.io.Closeables;
+import com.kixeye.chassis.bootstrap.AppMain.Arguments;
+import com.kixeye.chassis.bootstrap.configuration.ConfigurationProvider;
+import com.kixeye.chassis.bootstrap.spring.ArchaiusSpringPropertySource;
+import com.kixeye.chassis.bootstrap.spring.ArgumentsPropertySource;
+import com.netflix.config.AggregatedConfiguration;
+import com.netflix.config.DynamicWatchedConfiguration;
 
 /**
  * Represents an application configured and started by Bootstrap.

@@ -20,31 +20,31 @@ package com.kixeye.chassis.transport.http;
  * #L%
  */
 
-import com.codahale.metrics.Counter;
-import com.codahale.metrics.Meter;
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.SlidingTimeWindowReservoir;
-import com.codahale.metrics.SlidingWindowReservoir;
-import com.codahale.metrics.Timer;
-import com.netflix.config.DynamicIntProperty;
-import com.netflix.config.DynamicLongProperty;
-import com.netflix.config.DynamicProperty;
-import com.netflix.config.DynamicPropertyFactory;
+import static com.codahale.metrics.MetricRegistry.name;
+
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+
+import javax.servlet.AsyncEvent;
+import javax.servlet.AsyncListener;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.eclipse.jetty.http.HttpMethod;
 import org.eclipse.jetty.server.AsyncContextState;
 import org.eclipse.jetty.server.HttpChannelState;
 import org.eclipse.jetty.server.HttpChannelState.State;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.HandlerWrapper;
-import javax.servlet.AsyncEvent;
-import javax.servlet.AsyncListener;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
-import static com.codahale.metrics.MetricRegistry.name;
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.SlidingTimeWindowReservoir;
+import com.codahale.metrics.Timer;
+import com.netflix.config.DynamicLongProperty;
+import com.netflix.config.DynamicPropertyFactory;
 
 /**
  * A copy of the InstrumentedHandler from Codahale Metric's library.  The current version of the library

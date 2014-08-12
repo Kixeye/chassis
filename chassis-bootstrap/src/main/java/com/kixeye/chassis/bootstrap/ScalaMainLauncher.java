@@ -36,6 +36,6 @@ public class ScalaMainLauncher {
     public static void main(String [] args) throws Exception {
         Object obj = Class.forName(args[0]).newInstance();
         Method method = obj.getClass().getMethod(args[1], args.getClass());
-        method.invoke(obj, new String[][]{Arrays.copyOfRange(args, 2, args.length)});
+        method.invoke(obj, (Object[])new String[][]{Arrays.copyOfRange(args, 2, args.length)});
     }
 }

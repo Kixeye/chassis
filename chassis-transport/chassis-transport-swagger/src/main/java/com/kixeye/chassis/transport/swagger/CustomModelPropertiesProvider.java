@@ -19,22 +19,18 @@
  */
 package com.kixeye.chassis.transport.swagger;
 
+import static com.google.common.collect.Lists.newArrayList;
+
+import java.util.List;
+
 import com.fasterxml.classmate.ResolvedType;
 import com.fasterxml.classmate.members.ResolvedConstructor;
-import com.fasterxml.classmate.members.ResolvedMember;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.mangofactory.swagger.models.DefaultModelPropertiesProvider;
-import com.mangofactory.swagger.models.ModelContext;
 import com.mangofactory.swagger.models.ModelPropertiesProvider;
 import com.mangofactory.swagger.models.ModelProperty;
 import com.mangofactory.swagger.models.alternates.AlternateTypeProvider;
-import com.wordnik.swagger.model.AllowableValues;
-import scala.Option;
-import java.util.List;
-
-import static com.google.common.collect.Lists.newArrayList;
 
 /**
  * Provides support for Jackson's @JsonCreator. This provider
@@ -120,55 +116,5 @@ public class CustomModelPropertiesProvider implements ModelPropertiesProvider {
                 return modelProperty;
             }
         });
-    }
-
-    private class ModelPropertyWrapper implements ModelProperty {
-
-        private final ModelProperty wrapped;
-        private final ResolvedMember resolvedMember;
-
-        public ModelPropertyWrapper(ModelProperty wrapped, ResolvedMember resolvedMember) {
-            this.wrapped = wrapped;
-            this.resolvedMember = resolvedMember;
-        }
-
-        @Override
-        public String getName() {
-            return wrapped.getName();
-        }
-
-        @Override
-        public ResolvedType getType() {
-            return wrapped.getType();
-        }
-
-        @Override
-        public String typeName(ModelContext modelContext) {
-            return wrapped.typeName(modelContext);
-        }
-
-        @Override
-        public String qualifiedTypeName() {
-            return wrapped.qualifiedTypeName();
-        }
-
-        @Override
-        public AllowableValues allowableValues() {
-            return wrapped.allowableValues();
-        }
-
-        @Override
-        public Option<String> propertyDescription() {
-            return wrapped.propertyDescription();
-        }
-
-        @Override
-        public boolean isRequired() {
-            JsonProperty jsonProperty = resolvedMember.get(JsonProperty.class);
-            if (jsonProperty != null) {
-                return jsonProperty.required();
-            }
-            return wrapped.isRequired();
-        }
     }
 }

@@ -25,6 +25,7 @@ import com.kixeye.chassis.bootstrap.configuration.BootstrapConfigKeys;
 import com.kixeye.chassis.bootstrap.configuration.ConfigurationBuilder;
 import com.kixeye.chassis.bootstrap.configuration.ConfigurationProvider;
 import com.kixeye.chassis.bootstrap.configuration.zookeeper.ZookeeperConfigurationProvider;
+
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.reflections.Reflections;
 import org.springframework.beans.factory.annotation.Value;
@@ -78,7 +79,8 @@ public class BootstrapConfiguration {
         return new AppMetadata(appClass, reflections());
     }
 
-    @Bean
+	@Bean
+    @SuppressWarnings("resource")
     public AbstractConfiguration applicationConfiguration() throws ClassNotFoundException {
         AppMetadata appMetadata = appMetadata();
         ServerInstanceContext serverInstanceContext = serverInstanceContext();

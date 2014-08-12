@@ -118,7 +118,6 @@ public class ZookeeperConfigurationProvider implements ConfigurationProvider {
 
     @Override
     public void writeApplicationConfiguration(String environment, String applicationName, String applicationVersion, AbstractConfiguration configuration, boolean allowOverwrite) {
-        String path = getPath(environment, applicationName, applicationVersion) + "/config";
         ZookeeperConfigurationWriter writer = new ZookeeperConfigurationWriter(applicationName, environment, applicationVersion, curatorFramework, allowOverwrite);
         writer.write(configuration, new DefaultPropertyFilter());
     }

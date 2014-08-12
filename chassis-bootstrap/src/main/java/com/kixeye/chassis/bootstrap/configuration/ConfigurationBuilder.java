@@ -28,6 +28,7 @@ import com.kixeye.chassis.bootstrap.aws.ServerInstanceContext;
 import com.netflix.config.ConcurrentCompositeConfiguration;
 import com.netflix.config.ConcurrentMapConfiguration;
 import com.netflix.config.ConfigurationManager;
+
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.SystemConfiguration;
@@ -39,6 +40,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.util.SystemPropertyUtils;
+
 import java.io.Closeable;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -245,7 +247,8 @@ public class ConfigurationBuilder implements Closeable {
         }
     }
 
-    private void publishDefaults() {
+    @SuppressWarnings("resource")
+	private void publishDefaults() {
         ConfigurationBuilder defaultsBuilder = new ConfigurationBuilder(appName, appEnvironment, addSystemConfigs, reflections);
         defaultsBuilder.withAppVersion(appVersion);
         //a bit of a hack to get around Archaius's singleton requirement
