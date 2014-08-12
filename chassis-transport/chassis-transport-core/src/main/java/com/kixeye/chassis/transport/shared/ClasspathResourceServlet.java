@@ -27,6 +27,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
 import org.springframework.util.StreamUtils;
@@ -40,26 +41,54 @@ public class ClasspathResourceServlet extends HttpServlet {
 	private static final long serialVersionUID = -4202695753188111009L;
 	
 	private DefaultResourceLoader resourceLoader = new DefaultResourceLoader();
-	private String classPathDirectory;
+	
+	private final String classPathDirectory;
+	private final String rootContextPath;
+	private final String welcomePage;
 	
 	/**
 	 * Gets the parent directory.
 	 * 
 	 * @param classPathDirectory
+	 * @param rootContextPath
+	 * @param welcomePage
 	 */
-	public ClasspathResourceServlet(String classPathDirectory) {
+	public ClasspathResourceServlet(String classPathDirectory, String contextPath, String welcomePage) {
 		this.classPathDirectory = classPathDirectory;
+		this.welcomePage = welcomePage;
+
+		while (contextPath.endsWith("*") || contextPath.endsWith("/")) {
+			contextPath = StringUtils.removeEnd(contextPath, "*");
+			contextPath = StringUtils.removeEnd(contextPath, "/");
+		}
+		
+		this.rootContextPath = contextPath;
 	}
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		Resource resource = resourceLoader.getResource("classpath:" + classPathDirectory + req.getPathInfo());
+		// figure out the real path
+		String pathInfo = StringUtils.trimToEmpty(req.getPathInfo());
 		
-		if (resource.exists()) {
-			StreamUtils.copy(resource.getInputStream(), resp.getOutputStream());
-			resp.setStatus(HttpServletResponse.SC_OK);
+		while (pathInfo.endsWith("/")) {
+			pathInfo = StringUtils.removeEnd(pathInfo, "/");
+		}
+		
+		while (pathInfo.startsWith("/")) {
+			pathInfo = StringUtils.removeStart(pathInfo, "/");
+		}
+
+		if (StringUtils.isBlank(pathInfo)) {
+			resp.sendRedirect(rootContextPath + "/" + welcomePage);
 		} else {
-			resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+			Resource resource = resourceLoader.getResource("classpath:" + classPathDirectory + req.getPathInfo());
+			
+			if (resource.exists()) {
+				StreamUtils.copy(resource.getInputStream(), resp.getOutputStream());
+				resp.setStatus(HttpServletResponse.SC_OK);
+			} else {
+				resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+			}
 		}
 	}
 }

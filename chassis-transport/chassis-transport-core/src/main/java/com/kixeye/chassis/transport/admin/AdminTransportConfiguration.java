@@ -101,7 +101,7 @@ public class AdminTransportConfiguration {
 		
 		// add common admin servlets
 		context.addServlet(new ServletHolder(new HealthServlet(healthCheckRegistry)), "/healthcheck");
-		context.addServlet(new ServletHolder(new ClasspathResourceServlet("com/kixeye/chassis/transport/admin")), "/admin/*");
+		context.addServlet(new ServletHolder(new ClasspathResourceServlet("com/kixeye/chassis/transport/admin", "/admin/", "index.html")), "/admin/*");
 		context.addServlet(new ServletHolder(new PropertiesServlet()), "/admin/properties");
 		context.addServlet(new ServletHolder(new ClasspathDumpServlet()), "/admin/classpath");
 
