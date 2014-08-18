@@ -54,7 +54,6 @@ public class MetadataCollector {
      * Fallback default constructor if there are no MetadataPublisher beans
      */
     public MetadataCollector() {
-        this.publishers = null;
     }
 
     @Autowired(required = false)
