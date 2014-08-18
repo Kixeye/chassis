@@ -311,7 +311,7 @@ public class SharedTest {
 			
 			Assert.assertEquals(response.getStatusCode().value(), HttpStatus.OK.value());
 			Assert.assertTrue(response.getBody().contains("<a href=\"/metrics/ping\">Ping</a>"));
-			Assert.assertTrue(response.getBody().contains("<a href=\"/metrics/healthcheck\">Healthcheck</a>"));
+			Assert.assertTrue(response.getBody().contains("<a href=\"/healthcheck\">Healthcheck</a>"));
 			Assert.assertTrue(response.getBody().contains("<a href=\"/metrics/metrics?pretty=true\">Metrics</a>"));
 			Assert.assertTrue(response.getBody().contains("<a href=\"/admin/properties\">Properties</a>"));
 			Assert.assertTrue(response.getBody().contains("<a href=\"/metrics/threads\">Threads</a>"));
