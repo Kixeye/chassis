@@ -20,18 +20,22 @@ package com.kixeye.chassis.support.eureka;
  * #L%
  */
 
-import com.netflix.appinfo.ApplicationInfoManager;
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.config.DynamicPropertyFactory;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.apache.commons.configuration.Configuration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import com.netflix.appinfo.ApplicationInfoManager;
+import com.netflix.appinfo.InstanceInfo;
+import com.netflix.config.DynamicPropertyFactory;
 
 /**
  * Collects metadata to include in service discovery.  It pulls
@@ -44,7 +48,7 @@ import java.util.Map;
 public class MetadataCollector {
     private Map<String,String> staticMetaDataCache;
     private Map<String,String> oldMetaData;
-    private List<MetadataPublisher> publishers;
+    private Set<MetadataPublisher> publishers = Collections.newSetFromMap(new ConcurrentHashMap<MetadataPublisher, Boolean>());
 
     /**
      * Fallback default constructor if there are no MetadataPublisher beans
@@ -56,7 +60,7 @@ public class MetadataCollector {
     @Autowired(required = false)
     public MetadataCollector(List<MetadataPublisher> publishers)
     {
-        this.publishers = publishers;
+        this.publishers.addAll(publishers);
     }
 
 
@@ -111,7 +115,15 @@ public class MetadataCollector {
         }
         return metadata;
     }
-
+    
+    /**
+     * Adds a publisher manually.
+     * 
+     * @param publisher
+     */
+    public void addPublisher(MetadataPublisher publisher) {
+    	publishers.add(publisher);
+    }
 
     /***
      * Get combined static and dynamic metadata
