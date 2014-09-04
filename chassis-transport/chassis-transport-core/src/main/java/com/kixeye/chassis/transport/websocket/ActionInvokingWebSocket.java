@@ -292,8 +292,6 @@ public class ActionInvokingWebSocket implements WebSocketListener {
 			} catch (Exception e) {
 				logger.error("Unexpected error", e);
 			}
-			
-			session.close();
 		}
 	}
 
