@@ -25,10 +25,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
+import com.codahale.metrics.health.HealthCheckRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.kixeye.chassis.transport.serde.JacksonMessageSerDe;
+import com.kixeye.chassis.transport.shared.HealthServlet;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -78,6 +80,9 @@ public class HttpTransportConfiguration {
     @Value("${http.metrics.handler.enabled}")
     private boolean monitorHandler;
 
+    @Autowired(required = false)
+    private HealthCheckRegistry healthCheckRegistry;
+
     @Bean(initMethod="start", destroyMethod="stop")
 	@Order(0)
 	public Server httpServer(
@@ -121,6 +126,9 @@ public class HttpTransportConfiguration {
 		
         // map application servlets
 		context.addServlet(new ServletHolder(dispatcher), "/");
+        if (healthCheckRegistry != null) {
+            context.addServlet(new ServletHolder(new HealthServlet(healthCheckRegistry)), "/healthcheck");
+        }
 
         // create the server
     	Server server;
