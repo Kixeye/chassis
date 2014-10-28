@@ -97,7 +97,6 @@ public class BootstrapConfiguration {
         if(serverInstanceContext != null){
             serverInstanceContext.setAppName(appMetadata.getName());
             serverInstanceContext.setVersion(configuration.getString(BootstrapConfigKeys.APP_VERSION_KEY.getPropertyName()));
-            serverInstanceContext.tagInstance();
         }
         return configuration;
     }

@@ -51,7 +51,7 @@ public class UserData {
                 }
             }
         }
-        throw new BootstrapException("Found to environment data in user-data " + userData);
+        throw new BootstrapException("Found no environment data in user-data " + userData);
     }
 
     public String getEnvironment() {
