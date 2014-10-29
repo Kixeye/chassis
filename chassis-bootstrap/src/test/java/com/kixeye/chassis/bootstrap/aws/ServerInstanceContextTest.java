@@ -69,45 +69,6 @@ public class ServerInstanceContextTest {
         return region;
     }
 
-    public static CreateTagsRequest eqCreateTagsRequest(final CreateTagsRequest request) {
-        EasyMock.reportMatcher(new IArgumentMatcher() {
-            @Override
-            public boolean matches(Object o) {
-                CreateTagsRequest rq = (CreateTagsRequest) o;
-
-                if(!(rq.getResources().size() == request.getResources().size())){
-                    return false;
-                }
-                if(!(rq.getTags().size() == request.getTags().size())){
-                    return false;
-                }
-                boolean equal = rq.getResources().equals(request.getResources());
-                if(!equal){
-                    return false;
-                }
-                for(Tag tag:rq.getTags()){
-                    equal = false;
-                    for(Tag rtag:request.getTags()){
-                        if(EqualsBuilder.reflectionEquals(tag, rtag)){
-                            equal = true;
-                            continue;
-                        }
-                    }
-                    if(!equal){
-                        return false;
-                    }
-                }
-                return true;
-            }
-
-            @Override
-            public void appendTo(StringBuffer stringBuffer) {
-                stringBuffer.append("eqCreateTagsRequest for ").append(ReflectionToStringBuilder.toString(request));
-            }
-        });
-        return request;
-    }
-
     @Test
     public void initializeOutsideofAws() {
         Assert.assertNull(ServerInstanceContext.initialize());
@@ -254,28 +215,10 @@ public class ServerInstanceContextTest {
 
         String name = RandomStringUtils.random(20, "abcdefghi");
 
-        CreateTagsRequest request = new CreateTagsRequest();
-
-        String tagName = Joiner.on("-").join(environment, name, version);
-
-        List<Tag> tags = new ArrayList<>();
-        tags.add(new Tag().withKey("Name").withValue(tagName));
-        tags.add(new Tag().withKey("Environment").withValue(environment));
-        tags.add(new Tag().withKey("Version").withValue(version));
-        tags.add(new Tag().withKey("Application").withValue(name));
-        request.setTags(tags);
-        ArrayList<String> resources = new ArrayList<>();
-        resources.add(instanceId);
-        request.setResources(resources);
-
-        amazonEC2.createTags(eqCreateTagsRequest(request));
-        EasyMock.expectLastCall();
-
         EasyMock.replay(amazonEC2, amazonElasticLoadBalancing);
 
         context.setAppName(name);
         context.setVersion(version);
-        context.tagInstance();
 
         Assert.assertEquals(name, context.getAppName());
 

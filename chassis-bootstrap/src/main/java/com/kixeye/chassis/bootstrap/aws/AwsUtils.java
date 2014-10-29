@@ -41,17 +41,6 @@ public class AwsUtils {
     public static final String TAG_KEY_NAME = "Name";
 
     /**
-     * Tags an instance with the given tag
-     * @param instanceId
-     * @param amazonEC2
-     * @param tags
-     * @return
-     */
-    public static void tagInstance(String instanceId, AmazonEC2 amazonEC2, Tag...tags){
-        amazonEC2.createTags(new CreateTagsRequest().withResources(instanceId).withTags(tags));
-    }
-
-    /**
      * Fetches and instance's name Tag or null if it does not have one
      * @param instanceId
      * @param amazonEC2

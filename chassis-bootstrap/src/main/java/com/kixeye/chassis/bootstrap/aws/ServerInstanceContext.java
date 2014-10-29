@@ -168,7 +168,10 @@ public class ServerInstanceContext {
 
         List<LoadBalancerDescription> loadBalancers = AwsUtils.findLoadBalancers(amazonElasticLoadBalancing, new ZookeeperElbFilter(environment));
 
-        if(loadBalancers.size() != 1){
+        if(loadBalancers.size() == 0) {
+            LOGGER.info("No Zookeeper ELBs for environment " + environment);
+            return;
+        } else if(loadBalancers.size() != 1){
             throw new BootstrapException("Found multiple Zookeeper ELBs for environment " + environment);
         }
 
@@ -203,7 +206,13 @@ public class ServerInstanceContext {
     private void initEnvironment() {
         LOGGER.info("Initializing environment...");
 
-        this.environment = UserData.parse(userData).getEnvironment();
+        try {
+            this.environment = UserData.parse(userData).getEnvironment();
+        } catch (BootstrapException e)
+        {
+            // If we can't determine the environment from the user-data, that's fine.
+            // It can be passed in with the -e command-line param
+        }
 
         LOGGER.info("Initialized environment as: environment:{}",environment);
     }
@@ -260,21 +269,6 @@ public class ServerInstanceContext {
 
     public int getExhibitorPort() {
         return exhibitorPort;
-    }
-
-    public void tagInstance() {
-        Preconditions.checkArgument(StringUtils.isNotBlank(appName), "App Name is required");
-        Preconditions.checkArgument(StringUtils.isNotBlank(environment), "Environment is required");
-        Preconditions.checkArgument(StringUtils.isNotBlank(version), "Version is required");
-
-        String tagName = Joiner.on("-").join(environment, appName, version);
-
-        Tag nameTag = new Tag().withKey("Name").withValue(tagName);
-        Tag appTag = new Tag().withKey("Application").withValue(appName);
-        Tag envTag = new Tag().withKey("Environment").withValue(environment);
-        Tag versionTag = new Tag().withKey("Version").withValue(version);
-
-        AwsUtils.tagInstance(instanceId, amazonEC2, nameTag, appTag, envTag, versionTag);
     }
 
     public String getPrivateIp() {
