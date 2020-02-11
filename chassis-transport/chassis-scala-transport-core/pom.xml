@@ -130,7 +130,7 @@
         <repository>
             <id>repository.springsource.milestone</id>
             <name>SpringSource Milestone Repository</name>
-            <url>http://repo.springsource.org/milestone</url>
+            <url>https://repo.springsource.org/milestone</url>
         </repository>
         <repository>
             <id>sonatype-nexus-snapshots</id>
